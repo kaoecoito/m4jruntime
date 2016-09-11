@@ -1,5 +1,6 @@
 package br.com.sisprof.m4jruntime.runtime;
 
+import br.com.sisprof.m4jruntime.runtime.instructions.ForEnd;
 import br.com.sisprof.m4jruntime.runtime.instructions.Label;
 import br.com.sisprof.m4jruntime.runtime.instructions.NoOp;
 
@@ -108,7 +109,9 @@ public class Routine {
 
                 CallAction action = instruction.execute(frame);
 
-                if (CallAction.Return.equals(action)) {
+                if (CallAction.Break.equals(action)) {
+                    exitLoop(frame);
+                } else if (CallAction.Return.equals(action)) {
                     break;
                 }
             }
@@ -116,8 +119,18 @@ public class Routine {
             frame.next();
         }
 
+    }
 
-
+    private void exitLoop(Frame frame) {
+        int execPoint = frame.getExecPoint()+1;
+        while (execPoint<stack.size()) {
+            Instruction instruction = stack.get(execPoint);
+            if (instruction instanceof ForEnd) {
+                frame.jump(execPoint-1);
+                break;
+            }
+            execPoint++;
+        }
     }
 
 }

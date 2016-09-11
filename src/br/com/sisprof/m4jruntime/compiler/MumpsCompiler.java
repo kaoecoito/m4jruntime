@@ -100,7 +100,7 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
 
         processCmds(indent, ctx.cmd());
 
-        processJumpStack();
+        processBlockStack();
 
         return null;
     }
@@ -117,7 +117,7 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
                 for (MUMPSParser.CmdContext cmd : blockRundown.getCmds()) {
                     visitCmd(cmd);
                 }
-                processJumpStack();
+                processBlockStack();
             } else {
                 blockRundown = null;
             }
@@ -134,8 +134,7 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
         this.currentIndent = 0;
     }
 
-    private void processJumpStack() {
-        int currentStack = routine.getStackSize();
+    private void processBlockStack() {
         while (lineBlock.size()>0) {
             BlockStack block = lineBlock.getFirst();
             if (block instanceof BlockIndent) {
@@ -143,7 +142,16 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
             }
             if (block instanceof BlockJump) {
                 lineBlock.removeFirst();
-                ((BlockJump)block).getInstruction().setJump(currentStack-1);
+                ((BlockJump)block).getInstruction().setJump(routine.getStackSize()-1);
+            } else if (block instanceof BlockFor) {
+                lineBlock.removeFirst();
+                BlockFor blockFor = (BlockFor)block;
+                int line = blockFor.getSetup().getLine();
+                int indent = blockFor.getSetup().getIndent();
+
+                routine.add(ForIncrement.create(indent, line));
+                routine.add(Jump.create(indent, line, blockFor.getGotoStack()));
+                routine.add(ForEnd.create(indent, line));
             }
         }
     }
@@ -384,6 +392,20 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
             routine.add(block);
             lineBlock.addFirst(new BlockIndent(block));
             espectedIndent++;
+        }
+
+    }
+
+    @MumpsCompiledCommand({"FOR","F"})
+    private void visitCmdFor(MUMPSParser.CmdContext ctx) {
+        int line = ctx.getStart().getLine();
+
+        if (ctx.expr().isEmpty() && ctx.args()==null) {
+            int stackPos = routine.getStackSize();
+            ForSetup setup = ForSetup.create(currentIndent, line);
+            routine.add(setup);
+            routine.add(NoOp.create());
+            lineBlock.addFirst(new BlockFor(setup, stackPos+1));
         }
 
     }

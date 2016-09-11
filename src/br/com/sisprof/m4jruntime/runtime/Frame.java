@@ -13,6 +13,8 @@ public class Frame {
     private final VariableScope localScope;
     private final Routine routine;
 
+    private final Deque<LoopBlock> loops = new LinkedList<>();
+
     private int execPoint;
     private int currentIndent;
 
@@ -65,6 +67,10 @@ public class Frame {
         return dataStack.removeFirst();
     }
 
+    public MValue top() {
+        return dataStack.getFirst();
+    }
+
     public Frame getParentFrame() {
         return parentFrame;
     }
@@ -82,7 +88,25 @@ public class Frame {
     }
 
     public void decIndent() {
+        if (this.currentIndent==0) {
+            return;
+        }
         this.currentIndent--;
+    }
+
+    public void pushLoop(LoopBlock block) {
+        loops.addFirst(block);
+    }
+
+    public LoopBlock popLoop() {
+        return loops.removeFirst();
+    }
+
+    public boolean inLoop(int indent) {
+        if (loops.isEmpty()) {
+            return false;
+        }
+        return  (loops.getFirst().getIndent()==indent);
     }
 
 }

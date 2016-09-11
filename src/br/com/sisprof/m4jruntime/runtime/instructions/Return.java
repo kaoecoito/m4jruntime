@@ -37,9 +37,12 @@ public class Return extends AbstractInstruction {
 
     @Override
     public CallAction execute(Frame frame) {
-        if (value==0) {
+        if (frame.inLoop(this.getIndent())) {
+            return CallAction.Break;
+        } else if (value==0) {
             frame.decIndent();
+            return CallAction.None;
         }
-        return (value==0?CallAction.None:CallAction.Return);
+        return CallAction.Return;
     }
 }
