@@ -244,6 +244,7 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
 
     private void visitCmdAnnotation(MUMPSParser.CmdContext ctx, String name) {
         Method method = mumpsCommands.get(name.toUpperCase());
+        // TODO Implementar logs e debug
         try {
             method.invoke(this, ctx);
         } catch (IllegalAccessException e) {

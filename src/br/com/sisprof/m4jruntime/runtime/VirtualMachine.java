@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class VirtualMachine {
 
-    private static final AtomicLong JOBGENERATOR = new AtomicLong(0);
+    private static final AtomicLong JOB_GENERATOR = new AtomicLong(0);
 
     private static final ThreadLocal<VirtualMachine> CURRENT_VIRTUAL_MACHINE = new ThreadLocal<>();
 
@@ -23,7 +23,7 @@ public class VirtualMachine {
     }
 
     public static VirtualMachine newVirtualMachine() {
-        return new VirtualMachine(JOBGENERATOR.incrementAndGet());
+        return new VirtualMachine(JOB_GENERATOR.incrementAndGet());
     }
 
     public static VirtualMachine getCurrent() {
@@ -65,21 +65,29 @@ public class VirtualMachine {
     }
 
     public void run(Routine routine) {
+        Frame frame = createFrame(routine);
+        this.addFrame(frame);
+        this.resume(routine, frame);
+        this.popFrame();
+    }
+
+    public void resume(Routine routine, Frame frame) {
         CURRENT_VIRTUAL_MACHINE.set(this);
 
-        Frame frame = createFrame(routine);
+        Frame oldFrame = this.frame;
+        this.frame = frame;
 
-        this.addFrame(frame);
         routine.run(this);
+
         MValue returnValue = null;
         if (!frame.isEmptyStack()) {
             returnValue = frame.pop();
         }
-        this.popFrame();
-
-        if (returnValue!=null && frame!=null) {
-            frame.push(returnValue);
+        if (returnValue!=null && frame.getParentFrame()!=null) {
+            frame.getParentFrame().push(returnValue);
         }
+
+        this.frame = oldFrame;
 
         CURRENT_VIRTUAL_MACHINE.remove();
     }
