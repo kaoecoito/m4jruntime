@@ -1,2 +1,2 @@
 # m4jruntime
-MUMPS Runtime Interpreteter implemented in Java
+MUMPS Runtime Interpreter implemented in Java
