@@ -72,12 +72,15 @@ public class Routine {
                 if (number instanceof Long) {
                     stream.writeByte(2);
                     stream.writeLong(number.longValue());
-                } else if (number instanceof Double) {
+                } else if (number instanceof Integer) {
                     stream.writeByte(3);
+                    stream.writeLong(number.longValue());
+                } else if (number instanceof Double) {
+                    stream.writeByte(4);
                     stream.writeDouble(number.doubleValue());
                 }
             } else if (constant instanceof ConstantValueOperator) {
-                stream.writeByte(4);
+                stream.writeByte(5);
                 stream.writeUTF(((ConstantValueOperator)constant).getValue());
             }
         }

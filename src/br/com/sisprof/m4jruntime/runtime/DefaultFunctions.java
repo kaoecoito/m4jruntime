@@ -20,4 +20,22 @@ public class DefaultFunctions {
         return new MValueString(ret);
     }
 
+    @MumpsFunction({"$JOB","$J"})
+    public static MValue job(MValue[] args) {
+        return new MValueNumber(VirtualMachine.getCurrent().getJob());
+    }
+
+    @MumpsFunction({"$TEST","$T"})
+    public static MValue test(MValue[] args) {
+        VirtualMachine vm = VirtualMachine.getCurrent();
+        Variable variable = vm.getFrame().getGlobalScope().getVariable("$TEST");
+        int ret = 0;
+        if (variable!=null) {
+            if (!MumpsUtil.isFalse(variable.getValue())) {
+                ret = 1;
+            }
+        }
+        return new MValueNumber(ret);
+    }
+
 }
