@@ -4,8 +4,8 @@ MUMPS Runtime Interpreter implemented in Java
 
 # About
 
-- Created by [Kaoe Coito](https://www.facebook.com/kaoecoito) company's partner [Sistemas Profissionais](http://www.sistemasprofissionais.com.br/).
-- Designed to allow our current ERP system for Real estate developed in MUMPS can be ported to Java code.
+- Created by [Kaoe Coito](https://www.facebook.com/kaoecoito), owner of [Sistemas Profissionais](http://www.sistemasprofissionais.com.br/).
+- Designed to allow my current ERP system for Real Estate developed in MUMPS can be ported to Java code.
 - The project is in Pre Alpha phase and should not be used in production.
 - If you have any questions you can send to my e-mail.
 
