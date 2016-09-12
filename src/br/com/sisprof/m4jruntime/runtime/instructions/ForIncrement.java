@@ -1,9 +1,6 @@
 package br.com.sisprof.m4jruntime.runtime.instructions;
 
-import br.com.sisprof.m4jruntime.runtime.AbstractInstruction;
-import br.com.sisprof.m4jruntime.runtime.ByteCode;
-import br.com.sisprof.m4jruntime.runtime.CallAction;
-import br.com.sisprof.m4jruntime.runtime.Frame;
+import br.com.sisprof.m4jruntime.runtime.*;
 
 /**
  * Created by kaoe on 11/09/16.
@@ -30,6 +27,19 @@ public class ForIncrement extends AbstractInstruction {
 
     @Override
     public CallAction execute(Frame frame) {
+        LoopBlock loopBlock = frame.currentLoop();
+        if (loopBlock.getVarName()!=null && !loopBlock.getItems().isEmpty()) {
+            if (loopBlock.getCurrentItem()+1>=loopBlock.getItems().size()) {
+                frame.next();
+            } else {
+                String varName = loopBlock.getVarName();
+                int item = loopBlock.getCurrentItem()+1;
+                loopBlock.setCurrentItem(item);
+
+                Variable variable = frame.getLocalScope().getVariable(varName);
+                variable.setValue(loopBlock.getItems().get(item));
+            }
+        }
         return CallAction.None;
     }
 

@@ -102,6 +102,10 @@ public class Frame {
         return loops.removeFirst();
     }
 
+    public LoopBlock currentLoop() {
+        return loops.getFirst();
+    }
+
     public boolean inLoop(int indent) {
         if (loops.isEmpty()) {
             return false;

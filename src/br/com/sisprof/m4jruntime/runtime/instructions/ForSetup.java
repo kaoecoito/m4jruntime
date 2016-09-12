@@ -2,6 +2,9 @@ package br.com.sisprof.m4jruntime.runtime.instructions;
 
 import br.com.sisprof.m4jruntime.runtime.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by kaoe on 11/09/16.
  */
@@ -34,9 +37,33 @@ public class ForSetup extends AbstractInstruction {
 
     @Override
     public CallAction execute(Frame frame) {
+        String varName = null;
+        List<MValue> items = new ArrayList<>();
+        if (params>0) {
+            varName = frame.pop().getValue().toString();
+            int loops = params;
+            while (loops-->0) {
+                items.add(frame.pop());
+            }
+        }
+
+        if (varName!=null && !items.isEmpty()) {
+            Variable variable = frame.getLocalScope().getVariable(varName);
+            if (variable==null) {
+                variable = frame.getGlobalScope().newVariable(varName);
+            }
+            variable.setValue(items.get(0));
+        }
+
         MValueLoopSetup setup = new MValueLoopSetup();
         frame.push(setup);
-        frame.pushLoop(LoopBlock.create(this.getIndent()));
+        LoopBlock loopBlock = LoopBlock.create(this.getIndent(), varName, items);
+        if (!items.isEmpty()) {
+            loopBlock.setCurrentValue(items.get(0));
+            loopBlock.setCurrentItem(0);
+        }
+        frame.pushLoop(loopBlock);
+
         return CallAction.None;
     }
 }
