@@ -10,15 +10,12 @@ import br.com.sisprof.m4jruntime.runtime.Frame;
  */
 public class Label extends AbstractInstruction {
 
-    private final int nameIndex;
-
-    private Label(int line, int nameIndex) {
+    private Label(int line) {
         super(0, line);
-        this.nameIndex = nameIndex;
     }
 
-    public static Label create(int line, int nameIndex) {
-        return new Label(line, nameIndex);
+    public static Label create(int line) {
+        return new Label(line);
     }
 
     @Override
@@ -28,7 +25,7 @@ public class Label extends AbstractInstruction {
 
     @Override
     public int getParam() {
-        return nameIndex;
+        return 0;
     }
 
     @Override

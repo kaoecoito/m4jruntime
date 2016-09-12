@@ -20,6 +20,8 @@ public class MValueNumber implements MValue<Number> {
     public MValue clone() {
         if (value instanceof Long) {
             return new MValueNumber(value.longValue());
+        } else if (value instanceof Integer) {
+            return new MValueNumber(value.intValue());
         } else if (value instanceof Double) {
             return new MValueNumber(value.doubleValue());
         }

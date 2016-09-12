@@ -3,10 +3,7 @@ package br.com.sisprof.m4jruntime.compiler;
 import br.com.sisprof.m4jruntime.lang.MUMPSLexer;
 import br.com.sisprof.m4jruntime.lang.MUMPSParser;
 import br.com.sisprof.m4jruntime.lang.MUMPSParserVisitor;
-import br.com.sisprof.m4jruntime.runtime.ConstantValue;
-import br.com.sisprof.m4jruntime.runtime.ConstantValueNumber;
-import br.com.sisprof.m4jruntime.runtime.ConstantValueString;
-import br.com.sisprof.m4jruntime.runtime.Routine;
+import br.com.sisprof.m4jruntime.runtime.*;
 import br.com.sisprof.m4jruntime.runtime.instructions.*;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -180,9 +177,15 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
     public Object visitEntryPoint(MUMPSParser.EntryPointContext ctx) {
 
         int line = ctx.getStart().getLine();
-        int nameIndex = routine.add(new ConstantValueString(ctx.name.getText()));
+        int args = 0;
+        String name = ctx.name.getText();
 
-        routine.add(Label.create(line, nameIndex));
+        if (ctx.entryPointArgs()!=null) {
+            args = ctx.entryPointArgs().entryPointArg().size();
+        }
+
+        routine.add(new LabelInfo(name, routine.getStackSize(), args));
+        routine.add(Label.create(line));
 
         if (ctx.entryPointArgs()!=null) {
             visitEntryPointArgs(ctx.entryPointArgs());
@@ -260,13 +263,8 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
         int args = ctx.expr().size();
 
         if (!ctx.expr().isEmpty()) {
-            for (MUMPSParser.ExprContext expr:ctx.expr()) {
-                visitExpr(expr);
-            }
-            if (ctx.expr().size()>1) {
-                routine.add(Rotate.create(currentIndent, line, ctx.expr().size()));
-            }
-        } else if (ctx.args()!=null) {
+            visitExpr(ctx.expr());
+        } else if (ctx.args()!=null && !ctx.args().expr().isEmpty()) {
             args = ctx.args().expr().size();
             visitArgs(ctx.args());
         }
@@ -364,32 +362,6 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
             routine.add(PopStack.create(currentIndent, line));
 
         }
-
-    }
-
-    @MumpsCompiledCommand({"WRITE","W"})
-    private void visitCmdWrite(MUMPSParser.CmdContext ctx) {
-
-        int line = ctx.getStart().getLine();
-        int size = ctx.expr().size();
-
-        for (MUMPSParser.ExprContext expr:ctx.expr()) {
-            if (expr instanceof MUMPSParser.ExprFormatContext) {
-                MUMPSParser.ExprFormatContext format = (MUMPSParser.ExprFormatContext) expr;
-                if (format.format().OPER().isEmpty()) {
-                    visitExpr(expr);
-                } else {
-                    int enterIndex = routine.add(new ConstantValueString(System.lineSeparator()));
-                    routine.add(Constant.create(currentIndent, line, enterIndex));
-                }
-            } else {
-                visitExpr(expr);
-            }
-        }
-        if (size>1) {
-            routine.add(Rotate.create(currentIndent, line, size));
-        }
-        routine.add(Write.create(currentIndent, line, size));
 
     }
 
@@ -498,6 +470,15 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
 
     @Override
     public Object visitExprVar(MUMPSParser.ExprVarContext ctx) {
+
+        int line = ctx.getStart().getLine();
+        String varName = ctx.getText();
+        if (varName.startsWith("$")) {
+            int funcIndex = routine.add(new ConstantValueString(varName));
+            routine.add(Constant.create(currentIndent, line, funcIndex));
+            routine.add(Command.create(currentIndent, line, 0));
+        }
+
         return null;
     }
 
@@ -597,11 +578,14 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
 
     @Override
     public Object visitFormat(MUMPSParser.FormatContext ctx) {
+        int line = ctx.getStart().getLine();
         if (ctx.ID()!=null) {
-            int line = ctx.getStart().getLine();
             String varName = ctx.ID().getText();
             int varIndex = routine.add(new ConstantValueString(varName));
             routine.add(LoadVariable.create(currentIndent, line, varIndex));
+        } else if (!ctx.OPER().isEmpty()) {
+            int operatorIndex = routine.add(new ConstantValueOperator(ctx.OPER()));
+            routine.add(Constant.create(currentIndent, line, operatorIndex));
         }
         return null;
     }

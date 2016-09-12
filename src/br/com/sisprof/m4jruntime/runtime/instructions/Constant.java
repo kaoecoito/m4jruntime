@@ -34,6 +34,8 @@ public class Constant extends AbstractInstruction {
         MValue value;
         if (constant instanceof ConstantValueString) {
             value = new MValueString(((ConstantValueString)constant).getValue());
+        } else if (constant instanceof ConstantValueOperator) {
+            value = new MValueOperator(((ConstantValueOperator)constant).getValue());
         } else {
             value = new MValueNumber(((ConstantValueNumber)constant).getValue());
         }

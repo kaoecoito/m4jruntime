@@ -9,7 +9,7 @@ public abstract class AbstractConstantValue<T> implements ConstantValue<T> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ConstantValueString that = (ConstantValueString) o;
+        ConstantValue that = (ConstantValue) o;
         return this.getValue().equals(that.getValue());
     }
 

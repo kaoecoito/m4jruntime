@@ -1,7 +1,11 @@
 package br.com.sisprof.m4jruntime.runtime;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -13,6 +17,8 @@ public class VirtualMachine {
 
     private static final ThreadLocal<VirtualMachine> CURRENT_VIRTUAL_MACHINE = new ThreadLocal<>();
 
+    private final Map<String,Method> commandsAndFunctions = new HashMap<>();
+
     private final long job;
     private final Deque<Frame> frames = new LinkedList<>();
     public final VariableScope globalScope = new VariableScope(null);
@@ -20,6 +26,7 @@ public class VirtualMachine {
 
     private VirtualMachine(long job) {
         this.job = job;
+        this.init();
     }
 
     public static VirtualMachine newVirtualMachine() {
@@ -38,6 +45,57 @@ public class VirtualMachine {
         return frame;
     }
 
+    private void init() {
+        loadCommands(DefaultCommands.class);
+        loadFunctions(DefaultFunctions.class);
+    }
+
+    public void loadFunctions(Class clazz) {
+        loadCommands(clazz);
+    }
+
+    public void loadCommands(Class clazz) {
+        Method[] methods = clazz.getDeclaredMethods();
+        for (Method method:methods) {
+            if (method.isAnnotationPresent(MumpsCommand.class) && Modifier.isStatic(method.getModifiers())) {
+                MumpsCommand cmdAnnotation = method.getAnnotation(MumpsCommand.class);
+                Class param = null;
+                if (method.getParameterCount()==1) {
+                    param = method.getParameterTypes()[0];
+                }
+                Class ret = method.getReturnType();
+                if (param!=null &&
+                        param.isAssignableFrom(MValue[].class) &&
+                        cmdAnnotation.value()!=null &&
+                        cmdAnnotation.value().length>0 &&
+                        ret.equals(Void.TYPE)) {
+                    for (String cmd:cmdAnnotation.value()) {
+                        commandsAndFunctions.put(cmd.toUpperCase(), method);
+                    }
+                }
+            } else  if (method.isAnnotationPresent(MumpsFunction.class) && Modifier.isStatic(method.getModifiers())) {
+                MumpsFunction funcAnnotation = method.getAnnotation(MumpsFunction.class);
+                Class param = null;
+                if (method.getParameterCount()==1) {
+                    param = method.getParameterTypes()[0];
+                }
+                Class ret = method.getReturnType();
+                if (param!=null &&
+                        param.isAssignableFrom(MValue[].class) &&
+                        funcAnnotation.value()!=null &&
+                        funcAnnotation.value().length>0 &&
+                        ret.equals(MValue.class)) {
+                    for (String cmd:funcAnnotation.value()) {
+                        if (cmd.startsWith("$")) {
+                            commandsAndFunctions.put(cmd.toUpperCase(), method);
+                        }
+                    }
+                }
+            }
+
+        }
+    }
+
     public void addFrame(Frame frame) {
         frames.addFirst(frame);
         this.frame = frame;
@@ -52,6 +110,14 @@ public class VirtualMachine {
             this.frame = frames.peekFirst();
         }
         return item;
+    }
+
+    public boolean existsCommandOrFunction(String name) {
+        return commandsAndFunctions.containsKey(name.toUpperCase());
+    }
+
+    public Method getCommandOrFunction(String name) {
+        return commandsAndFunctions.get(name.toUpperCase());
     }
 
     private Frame createFrame(Routine routine) {

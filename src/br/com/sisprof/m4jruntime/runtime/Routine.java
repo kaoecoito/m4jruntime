@@ -1,7 +1,7 @@
 package br.com.sisprof.m4jruntime.runtime;
 
+import br.com.sisprof.m4jruntime.compiler.LabelInfo;
 import br.com.sisprof.m4jruntime.runtime.instructions.ForEnd;
-import br.com.sisprof.m4jruntime.runtime.instructions.Label;
 import br.com.sisprof.m4jruntime.runtime.instructions.NoOp;
 
 import java.io.DataOutputStream;
@@ -22,7 +22,7 @@ public class Routine {
     private static final byte[] VERSION = new byte[]{1, 0, 0};
     private static final int BUILD = 2016090900;
 
-    private final Map<Label,Integer> labelMap = new HashMap<>();
+    private final List<LabelInfo> labels = new ArrayList<>();
 
     private final List<ConstantValue> constants = new ArrayList<>();
     private final Map<ConstantValue,Integer> constantMap = new HashMap<>();
@@ -37,11 +37,11 @@ public class Routine {
         return constantMap.get(constant);
     }
 
+    public void add(LabelInfo info) {
+        labels.add(info);
+    }
+
     public void add(Instruction instruction) {
-        if (instruction instanceof Label) {
-            Label label = (Label)instruction;
-            labelMap.put(label, stack.size());
-        }
         stack.add(instruction);
     }
 
@@ -54,6 +54,13 @@ public class Routine {
         stream.write(MAGIC);
         stream.write(VERSION);
         stream.writeInt(BUILD);
+
+        stream.writeInt(labels.size());
+        for (LabelInfo label:labels) {
+            stream.writeUTF(label.getName());
+            stream.writeInt(label.getParams());
+            stream.writeInt(label.getStack());
+        }
 
         stream.writeInt(constants.size());
         for (ConstantValue constant:constants) {
@@ -69,14 +76,10 @@ public class Routine {
                     stream.writeByte(3);
                     stream.writeDouble(number.doubleValue());
                 }
+            } else if (constant instanceof ConstantValueOperator) {
+                stream.writeByte(4);
+                stream.writeUTF(((ConstantValueOperator)constant).getValue());
             }
-        }
-
-        stream.writeInt(labelMap.size());
-        for (Label label:labelMap.keySet()) {
-            int stackIndex = labelMap.get(label);
-            stream.writeInt(label.getParam());
-            stream.writeInt(stackIndex);
         }
 
         for (Instruction instruction:stack) {

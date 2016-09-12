@@ -2,6 +2,8 @@ package br.com.sisprof.m4jruntime.runtime.instructions;
 
 import br.com.sisprof.m4jruntime.runtime.*;
 
+import java.lang.reflect.Method;
+
 /**
  * Created by kaoe on 09/09/16.
  */
@@ -30,10 +32,37 @@ public class Command extends AbstractInstruction {
 
     @Override
     public CallAction execute(Frame frame) {
-
         String commandName = ((MValueString)frame.pop()).getValue();
-        System.out.println("Executando "+commandName+" com "+args+" parametros");
-
+        MValue[] params = new MValue[args];
+        for (int i=0;i<params.length;i++) {
+            params[i] = frame.pop();
+        }
+        VirtualMachine vm = VirtualMachine.getCurrent();
+        if (vm.existsCommandOrFunction(commandName)) {
+            Method method = vm.getCommandOrFunction(commandName);
+            try {
+                if (method.getReturnType().equals(Void.TYPE)) {
+                    method.invoke(null, new Object[]{params});
+                } else {
+                    MValue ret = (MValue)method.invoke(null, new Object[]{params});
+                    if (ret==null) {
+                        frame.push(MValue.NULL);
+                    } else {
+                        frame.push(ret);
+                    }
+                }
+            } catch (Exception ex) {
+                // TODO Implementar log de erro
+                ex.printStackTrace();
+            }
+        } else {
+            // TODO Implementar comando inválido
+            if (commandName.startsWith("$")) {
+                System.err.println("Função "+commandName+" não existe");
+            } else {
+                System.err.println("Comando "+commandName+" não existe");
+            }
+        }
         return CallAction.None;
     }
 }

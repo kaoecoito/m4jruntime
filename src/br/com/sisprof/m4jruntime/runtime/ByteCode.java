@@ -6,7 +6,7 @@ package br.com.sisprof.m4jruntime.runtime;
 public enum ByteCode {
 
     NOOP(false),
-    LABEL(false), // TODO Parametros???
+    LABEL(false),
     BLOCK(false),
     RETURN(true),
     CONST(true),
@@ -23,8 +23,7 @@ public enum ByteCode {
     POP_STACK(true),
     ROTATE(true),
     BINARY_OR(false),
-    CMD(true),
-    CMD_WRITE(true),
+    CMD(true)
     ;
 
     private final boolean parameters;
