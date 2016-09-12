@@ -21,6 +21,8 @@ public enum ByteCode {
     FOR_END(false),
     DUP_STACK(false),
     POP_STACK(true),
+    ROTATE(true),
+    BINARY_OR(false),
     CMD(true),
     CMD_WRITE(true),
     ;

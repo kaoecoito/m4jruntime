@@ -10,4 +10,9 @@ public class MValueLoopSetup implements MValue<Integer> {
         return 0;
     }
 
+    @Override
+    public MValue clone() {
+        return new MValueLoopSetup();
+    }
+
 }

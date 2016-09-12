@@ -28,9 +28,10 @@ entryPointArg: ID ( OPER literal)?;
 // command structure
 cmd
 	: ID cmdPostCond // weird issue with "Q:I=10 RET", having this at the top makes the full expression go to the pce
+	| ID cmdPostCond? DS // command with no expressions/arguments in middle of line
 	| ID cmdPostCond? expr (COMMA expr)* // regular command with expression list
 	| ID cmdPostCond? args              // for commands with arguments like OPEN, FOR, USE, CLOSE, READ, etc.
-	| ID cmdPostCond?                  // command with no expressions/arguments
+	| ID cmdPostCond?                   // command with no expressions/arguments
 ;
 cmdPostCond: ':' expr;
 

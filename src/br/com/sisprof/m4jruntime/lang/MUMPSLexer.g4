@@ -28,6 +28,7 @@ DOT: '.';
 // whitespace
 NLI: '\r'? '\n' ' '; // indented new line
 NL: '\r'? '\n'; // non intended new line
+DS: '  ';
 WS : [ \t]+ -> skip;
 
 

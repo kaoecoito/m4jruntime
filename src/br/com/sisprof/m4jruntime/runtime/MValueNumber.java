@@ -15,5 +15,14 @@ public class MValueNumber implements MValue<Number> {
     public Number getValue() {
         return value;
     }
-    
+
+    @Override
+    public MValue clone() {
+        if (value instanceof Long) {
+            return new MValueNumber(value.longValue());
+        } else if (value instanceof Double) {
+            return new MValueNumber(value.doubleValue());
+        }
+        return new MValueNumber(value);
+    }
 }

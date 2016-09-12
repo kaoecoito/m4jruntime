@@ -16,4 +16,9 @@ public class MValueString implements MValue<String> {
         return value;
     }
 
+    @Override
+    public MValue clone() {
+        return new MValueString(value);
+    }
+
 }

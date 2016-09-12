@@ -260,10 +260,11 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
         int args = ctx.expr().size();
 
         if (!ctx.expr().isEmpty()) {
-            List<MUMPSParser.ExprContext> params = new ArrayList<>(ctx.expr());
-            Collections.reverse(params);
-            for (MUMPSParser.ExprContext expr:params) {
+            for (MUMPSParser.ExprContext expr:ctx.expr()) {
                 visitExpr(expr);
+            }
+            if (ctx.expr().size()>1) {
+                routine.add(Rotate.create(currentIndent, line, ctx.expr().size()));
             }
         } else if (ctx.args()!=null) {
             args = ctx.args().expr().size();
@@ -281,9 +282,18 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
     private void visitCmdIf(MUMPSParser.CmdContext ctx) {
         if (!ctx.expr().isEmpty()) {
             int line = ctx.getStart().getLine();
+            int size = ctx.expr().size();
+
             int testIndex = routine.add(new ConstantValueString("$TEST"));
 
-            visitExpr(ctx.expr());
+            visitExpr(ctx.expr(0));
+
+            if (size>1) {
+                for (int i=1;i<size;i++) {
+                    visitExpr(ctx.expr(i));
+                    routine.add(BinaryOR.create(currentIndent, line));
+                }
+            }
 
             routine.add(Duplicate.create(currentIndent, line));
             routine.add(StoreVariable.create(currentIndent, line, testIndex));
@@ -361,10 +371,9 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
     private void visitCmdWrite(MUMPSParser.CmdContext ctx) {
 
         int line = ctx.getStart().getLine();
-        List<MUMPSParser.ExprContext> params = new ArrayList<>(ctx.expr());
-        Collections.reverse(params);
+        int size = ctx.expr().size();
 
-        for (MUMPSParser.ExprContext expr:params) {
+        for (MUMPSParser.ExprContext expr:ctx.expr()) {
             if (expr instanceof MUMPSParser.ExprFormatContext) {
                 MUMPSParser.ExprFormatContext format = (MUMPSParser.ExprFormatContext) expr;
                 if (format.format().OPER().isEmpty()) {
@@ -377,8 +386,10 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
                 visitExpr(expr);
             }
         }
-
-        routine.add(Write.create(currentIndent, line, params.size()));
+        if (size>1) {
+            routine.add(Rotate.create(currentIndent, line, size));
+        }
+        routine.add(Write.create(currentIndent, line, size));
 
     }
 
@@ -435,10 +446,15 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
     }
 
     private Object visitExpr(List<MUMPSParser.ExprContext> context) {
-        List<MUMPSParser.ExprContext> params = new ArrayList<>(context);
-        Collections.reverse(params);
-        for (MUMPSParser.ExprContext expr:params) {
+        int line = -1;
+        for (MUMPSParser.ExprContext expr:context) {
+            if (line<0) {
+                line = expr.getStart().getLine();
+            }
             visitExpr(expr);
+        }
+        if (context.size()>1) {
+            routine.add(Rotate.create(currentIndent, line, context.size()));
         }
         return null;
     }
@@ -612,10 +628,15 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
 
     @Override
     public Object visitArgs(MUMPSParser.ArgsContext ctx) {
-        List<MUMPSParser.ExprContext> params = new ArrayList<>(ctx.expr());
-        Collections.reverse(params);
-        for (MUMPSParser.ExprContext expr:params) {
+        int line = -1;
+        for (MUMPSParser.ExprContext expr:ctx.expr()) {
+            if (line<0) {
+                line = expr.getStart().getLine();
+            }
             visitExpr(expr);
+        }
+        if (ctx.expr().size()>1) {
+            routine.add(Rotate.create(currentIndent, line, ctx.expr().size()));
         }
         return null;
     }

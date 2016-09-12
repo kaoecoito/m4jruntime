@@ -9,4 +9,6 @@ public interface MValue<T> {
 
     T getValue();
 
+    MValue clone();
+
 }
