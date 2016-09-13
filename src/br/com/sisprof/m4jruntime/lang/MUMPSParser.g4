@@ -47,6 +47,7 @@ expr
 	| AT ref (AT LP args? RP)? #ExprIndrRef
 	| AT var (AT LP args? RP)? #ExprIndrVar
 	| AT func (AT LP args? RP)? #ExprIndrFunc
+	| expr ':' expr (COMMA expr ':' expr)* #ExprColin
 	| OPER expr     #ExprUnary
 	| expr OPER expr #ExprBinary
 	| expr (MATCH | NOT_MATCH) exprPatternItem+ #ExprMatch
@@ -82,8 +83,8 @@ ref
 ;
 args
 	: expr (COMMA expr?)* // normal comma separated list of arguments
-	| expr (':' expr?)*   // for command args like READ, FOR, etc. separated by :'s
-	| expr ':' expr (COMMA expr ':' expr)* // GO style args
+	| expr (':' expr?)*    // for command args like READ, FOR, etc. separated by :'s
+    | expr ':' expr (COMMA expr ':' expr?)*  // GO style args
 ;
 
 namespace

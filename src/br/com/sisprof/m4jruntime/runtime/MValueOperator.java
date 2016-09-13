@@ -21,4 +21,8 @@ public class MValueOperator implements MValue<String> {
         return new MValueOperator(value);
     }
 
+    @Override
+    public Number toNumber() {
+        return 0l;
+    }
 }

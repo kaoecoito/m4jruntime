@@ -13,6 +13,7 @@ public enum ByteCode {
     NEW_VAR(true),
     STORE_VAR(true),
     LOAD_VAR(true),
+    MULTI_VAR(true),
     JUMP_IF_TRUE(true),
     JUMP_IF_FALSE(true),
     JUMP(true),

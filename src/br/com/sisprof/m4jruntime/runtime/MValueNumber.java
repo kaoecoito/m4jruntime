@@ -27,4 +27,9 @@ public class MValueNumber implements MValue<Number> {
         }
         return new MValueNumber(value);
     }
+
+    @Override
+    public Number toNumber() {
+        return value;
+    }
 }

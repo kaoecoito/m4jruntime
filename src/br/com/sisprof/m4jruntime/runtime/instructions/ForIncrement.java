@@ -29,18 +29,28 @@ public class ForIncrement extends AbstractInstruction {
     public CallAction execute(Frame frame) {
         LoopBlock loopBlock = frame.currentLoop();
         if (loopBlock.getVarName()!=null && !loopBlock.getItems().isEmpty()) {
-            if (loopBlock.getCurrentItem()+1>=loopBlock.getItems().size()) {
+            String varName = loopBlock.getVarName();
+            MValue currentItem = loopBlock.getCurrentValue();
+            if (currentItem instanceof MValueMultiVar && ((MValueMultiVar)currentItem).hasNext()) {
+                setValue(frame, varName, currentItem);
+            } else if (loopBlock.getCurrentItem()+1>=loopBlock.getItems().size()) {
                 frame.next();
             } else {
-                String varName = loopBlock.getVarName();
                 int item = loopBlock.getCurrentItem()+1;
                 loopBlock.setCurrentItem(item);
-
-                Variable variable = frame.getLocalScope().getVariable(varName);
-                variable.setValue(loopBlock.getItems().get(item));
+                setValue(frame, varName, loopBlock.getItems().get(item));
             }
         }
         return CallAction.None;
+    }
+
+    private void setValue(Frame frame, String varName, MValue value) {
+        Variable variable = frame.getLocalScope().getVariable(varName);
+        if (value instanceof MValueMultiVar) {
+            variable.setValue(((MValueMultiVar)value).next());
+        } else {
+            variable.setValue(value);
+        }
     }
 
 }

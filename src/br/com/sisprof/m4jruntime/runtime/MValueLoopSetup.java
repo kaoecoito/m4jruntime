@@ -15,4 +15,8 @@ public class MValueLoopSetup implements MValue<Integer> {
         return new MValueLoopSetup();
     }
 
+    @Override
+    public Number toNumber() {
+        return 0l;
+    }
 }

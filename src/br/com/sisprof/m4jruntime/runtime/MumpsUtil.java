@@ -21,4 +21,25 @@ public abstract class MumpsUtil {
         return false;
     }
 
+    public static Number toNumber(String value) {
+        Number ret = 0l;
+        if (value!=null) {
+            StringBuilder builder = new StringBuilder();
+            char[] digits = value.toCharArray();
+            for (char digit:digits) {
+                if (!Character.isDigit(digit)) {
+                    break;
+                } else {
+                    builder.append(digit);
+                }
+            }
+            if (builder.length()>0) {
+                try {
+                    ret = Long.parseLong(builder.toString());
+                } catch (Exception ignore){}
+            }
+        }
+        return ret;
+    }
+
 }

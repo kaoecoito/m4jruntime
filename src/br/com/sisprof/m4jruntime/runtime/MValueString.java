@@ -21,4 +21,9 @@ public class MValueString implements MValue<String> {
         return new MValueString(value);
     }
 
+    @Override
+    public Number toNumber() {
+        return MumpsUtil.toNumber(value);
+    }
+
 }

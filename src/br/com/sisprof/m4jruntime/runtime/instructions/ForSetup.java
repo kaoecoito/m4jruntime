@@ -52,7 +52,12 @@ public class ForSetup extends AbstractInstruction {
             if (variable==null) {
                 variable = frame.getGlobalScope().newVariable(varName);
             }
-            variable.setValue(items.get(0));
+            MValue value = items.get(0);
+            if (value instanceof MValueMultiVar) {
+                variable.setValue(((MValueMultiVar)value).next());
+            } else {
+                variable.setValue(value);
+            }
         }
 
         MValueLoopSetup setup = new MValueLoopSetup();

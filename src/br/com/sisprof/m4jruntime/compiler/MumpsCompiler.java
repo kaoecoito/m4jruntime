@@ -486,6 +486,8 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
             visitExprList((MUMPSParser.ExprListContext)context);
         } else if (context instanceof MUMPSParser.ExprLineRefContext) {
             visitExprLineRef((MUMPSParser.ExprLineRefContext)context);
+        } else if (context instanceof MUMPSParser.ExprColinContext) {
+            visitExprColin((MUMPSParser.ExprColinContext)context);
         }
 
         return null;
@@ -559,6 +561,31 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
     @Override
     public Object visitExprUnary(MUMPSParser.ExprUnaryContext ctx) {
         return null;
+    }
+
+    @Override
+    public Object visitExprColin(MUMPSParser.ExprColinContext ctx) {
+
+        int line = ctx.getStart().getLine();
+
+        List<MUMPSParser.ExprContext> expr = new ArrayList<>();
+        resolvColinContext(ctx, expr);
+
+        visitExpr(expr);
+
+        routine.add(MultiVariable.create(currentIndent, line, expr.size()));
+
+        return null;
+    }
+
+    private void resolvColinContext(MUMPSParser.ExprColinContext ctx, List<MUMPSParser.ExprContext> exprList) {
+        for (MUMPSParser.ExprContext exp:ctx.expr()) {
+            if (exp instanceof MUMPSParser.ExprColinContext) {
+                resolvColinContext((MUMPSParser.ExprColinContext)exp, exprList);
+            } else {
+                exprList.add(exp);
+            }
+        }
     }
 
     @Override
