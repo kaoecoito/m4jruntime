@@ -32,4 +32,12 @@ public class MValueNumber implements MValue<Number> {
     public Number toNumber() {
         return value;
     }
+
+    @Override
+    public int compareTo(MValue o) {
+        if (value==null && o==null) return 0;
+        if (value==null) return -1;
+        if (o==null || o.getValue()==null) return 1;
+        return MumpsUtil.compareAsNumber(value.toString(), o.getValue().toString());
+    }
 }

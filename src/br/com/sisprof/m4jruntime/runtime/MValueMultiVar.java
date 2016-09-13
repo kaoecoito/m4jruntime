@@ -58,4 +58,8 @@ public class MValueMultiVar implements MValue<Integer> {
         return (currentValue==null?0l:currentValue);
     }
 
+    @Override
+    public int compareTo(MValue o) {
+        throw new IllegalArgumentException("Impossivel comparar valor tipo MultiVar");
+    }
 }

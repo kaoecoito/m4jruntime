@@ -23,7 +23,15 @@ public enum ByteCode {
     DUP_STACK(false),
     POP_STACK(true),
     ROTATE(true),
+    BINARY_EQ(false),
+    BINARY_NEQ(false),
+    BINARY_GT(false),
+    BINARY_GTE(false),
+    BINARY_LT(false),
+    BINARY_LTE(false),
     BINARY_OR(false),
+    BINARY_AND(false),
+    BINARY_CONCAT(false),
     CMD(true)
     ;
 

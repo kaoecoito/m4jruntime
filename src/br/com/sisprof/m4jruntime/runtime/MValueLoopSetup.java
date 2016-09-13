@@ -19,4 +19,10 @@ public class MValueLoopSetup implements MValue<Integer> {
     public Number toNumber() {
         return 0l;
     }
+
+    @Override
+    public int compareTo(MValue o) {
+        throw new IllegalArgumentException("Impossivel comparar valor tipo LoopSetup");
+    }
+
 }

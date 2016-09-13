@@ -545,6 +545,16 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
 
     @Override
     public Object visitExprBinary(MUMPSParser.ExprBinaryContext ctx) {
+
+        int line = ctx.getStart().getLine();
+        String oper = ctx.OPER().getText();
+
+        visitExpr(ctx.expr(0));
+        visitExpr(ctx.expr(1));
+
+        routine.add(Rotate.create(currentIndent, line, 2));
+        routine.add(BinaryOperationFactory.create(currentIndent, line, oper));
+
         return null;
     }
 
