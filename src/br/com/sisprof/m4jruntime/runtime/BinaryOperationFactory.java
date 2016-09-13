@@ -22,6 +22,8 @@ public class BinaryOperationFactory {
             op = BinaryGTE.create(indent, line);
         } else if ("<=".equals(name)) {
             op = BinaryLTE.create(indent, line);
+        } else if ("_".equals(name)) {
+            op = BinaryConcat.create(indent, line);
         } else if ("!".equals(name)) {
             op = BinaryOR.create(indent, line);
         } else if ("&".equals(name)) {

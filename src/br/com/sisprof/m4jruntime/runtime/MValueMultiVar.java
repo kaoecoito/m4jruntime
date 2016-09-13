@@ -9,7 +9,7 @@ import java.util.List;
 public class MValueMultiVar implements MValue<Integer> {
 
     private final List<MValue> items;
-    private Long currentValue;
+    private Number currentValue;
 
     public MValueMultiVar(List<MValue> items) {
         this.items = Collections.unmodifiableList(items);
@@ -36,7 +36,7 @@ public class MValueMultiVar implements MValue<Integer> {
         } else if (items.size()==3) {
             if (currentValue==null) {
                 ret = true;
-            } else if (currentValue.compareTo((Long)items.get(2).toNumber())<0) {
+            } else if (MumpsUtil.compareAsNumber(currentValue.toString(), items.get(2).getValue().toString())<0) {
                 ret = true;
             }
         }
@@ -47,8 +47,12 @@ public class MValueMultiVar implements MValue<Integer> {
         if (currentValue==null) {
             currentValue = (Long)items.get(0).toNumber();
         } else {
-            Long incr = (Long)items.get(1).toNumber();
-            currentValue += incr;
+            Number valInc = items.get(1).toNumber();
+            if (valInc instanceof Long) {
+                currentValue = currentValue.longValue()+valInc.longValue();
+            } else {
+                currentValue = currentValue.doubleValue()+valInc.doubleValue();
+            }
         }
         return new MValueNumber(currentValue);
     }

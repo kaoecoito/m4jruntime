@@ -625,11 +625,7 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
             String strVal = ctx.STR_LITERAL().getText();
             val = new ConstantValueString(strVal.substring(1, strVal.length()-1));
         } else if (ctx.NUM_LITERAL()!=null) {
-            try {
-                val = new ConstantValueNumber(NumberFormat.getInstance().parse(ctx.NUM_LITERAL().getText()));
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
+            val = new ConstantValueNumber(MumpsUtil.toNumber(ctx.NUM_LITERAL().getText()));
         }
         int constantIndex = routine.add(val);
         routine.add(Constant.create(currentIndent, line, constantIndex));
