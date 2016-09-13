@@ -5,24 +5,15 @@ package br.com.sisprof.m4jruntime.runtime;
  */
 public class Variable {
 
-    private String name;
+    private final String name;
     private MValue value = MValue.NULL;
 
     public Variable(String name) {
         this.name = name;
     }
 
-    public Variable(String name, MValue value) {
-        this.name = name;
-        this.value = value;
-    }
-
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public MValue getValue() {

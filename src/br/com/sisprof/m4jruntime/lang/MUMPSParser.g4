@@ -47,7 +47,7 @@ expr
 	| AT ref (AT LP args? RP)? #ExprIndrRef
 	| AT var (AT LP args? RP)? #ExprIndrVar
 	| AT func (AT LP args? RP)? #ExprIndrFunc
-	| expr ':' expr (COMMA expr ':' expr)* #ExprColin
+	| expr ':' expr (':' expr)? #ExprColin // for command FOR style like FOR I=1:1:10
 	| OPER expr     #ExprUnary
 	| expr OPER expr #ExprBinary
 	| expr (MATCH | NOT_MATCH) exprPatternItem+ #ExprMatch
