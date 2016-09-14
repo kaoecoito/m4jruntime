@@ -575,11 +575,13 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
 
     @Override
     public Object visitExprGroup(MUMPSParser.ExprGroupContext ctx) {
+        visitExpr(ctx.expr());
         return null;
     }
 
     @Override
     public Object visitExprList(MUMPSParser.ExprListContext ctx) {
+        visitExpr(ctx.expr());
         return null;
     }
 

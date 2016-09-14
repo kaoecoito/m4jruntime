@@ -26,8 +26,11 @@ public abstract class NumberOperations {
         if (value!=null && !value.isEmpty()) {
             char[] digits = value.toCharArray();
             boolean point = false;
-            for (char digit:digits) {
-                if (digit=='.' && !point) {
+            for (int i=0;i<digits.length;i++) {
+                char digit = digits[i];
+                if ((digit=='-' || digit=='+') && i==0) {
+                    point = true;
+                } else if (digit=='.' && !point) {
                     point = true;
                 } else if (!Character.isDigit(digit)) {
                     ret = false;
