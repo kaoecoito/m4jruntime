@@ -17,6 +17,22 @@ public class MValueNumber extends MValue<Number> {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        MValueNumber that = (MValueNumber) o;
+
+        return value.equals(that.value);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return value.hashCode();
+    }
+
+    @Override
     public MValue cloneValue() {
         if (value instanceof Long) {
             return new MValueNumber(value.longValue());

@@ -27,6 +27,22 @@ public class MValueString extends MValue<String> {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        MValueString that = (MValueString) o;
+
+        return value.equals(that.value);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return value.hashCode();
+    }
+
+    @Override
     public int compareTo(MValue o) {
         if (value==null && o==null) return 0;
         if (value==null) return -1;
