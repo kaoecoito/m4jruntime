@@ -29,7 +29,7 @@ public class BinaryOR extends AbstractInstruction {
     public CallAction execute(Frame frame) {
         MValue v1 = frame.pop();
         MValue v2 = frame.pop();
-        boolean result = (!MumpsUtil.isFalse(v1) || !MumpsUtil.isFalse(v2));
+        boolean result = (!NumberOperations.isFalse(v1) || !NumberOperations.isFalse(v2));
         frame.push(new MValueNumber(result?1:0));
         return CallAction.None;
     }
