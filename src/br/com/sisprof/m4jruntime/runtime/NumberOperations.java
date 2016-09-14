@@ -91,4 +91,56 @@ public abstract class NumberOperations {
         }
     }
 
+    public static Number add(Number v1, Number v2) {
+        Number ret;
+        if (v1 instanceof Double || v2 instanceof Double) {
+            ret = v1.doubleValue() + v2.doubleValue();
+        } else {
+            ret = v1.longValue() + v2.longValue();
+        }
+        return ret;
+    }
+
+    public static Number sub(Number v1, Number v2) {
+        Number ret;
+        if (v1 instanceof Double || v2 instanceof Double) {
+            ret = v1.doubleValue() - v2.doubleValue();
+        } else {
+            ret = v1.longValue() - v2.longValue();
+        }
+        return ret;
+    }
+
+    public static Number multi(Number v1, Number v2) {
+        Number ret;
+        if (v1 instanceof Double || v2 instanceof Double) {
+            ret = v1.doubleValue() * v2.doubleValue();
+        } else {
+            ret = v1.longValue() * v2.longValue();
+        }
+        return ret;
+    }
+
+    public static Number expr(Number v1, Number v2) {
+        Number ret;
+        if (v1 instanceof Double || v2 instanceof Double) {
+            ret = Math.pow(v1.doubleValue(), v2.doubleValue());
+        } else {
+            ret = Math.pow(v1.longValue(), v2.longValue());
+        }
+        return ret;
+    }
+
+    public static Number div(Number v1, Number v2) {
+        return (v1.doubleValue() / v2.doubleValue());
+    }
+
+    public static Number idiv(Number v1, Number v2) {
+        return ((Double)(v1.doubleValue() / v2.doubleValue())).longValue();
+    }
+
+    public static Number mod(Number v1, Number v2) {
+        return ((Double)(v1.doubleValue() % v2.doubleValue())).longValue();
+    }
+
 }

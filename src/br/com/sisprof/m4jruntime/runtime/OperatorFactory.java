@@ -28,6 +28,20 @@ public class OperatorFactory {
             op = BinaryOR.create(indent, line);
         } else if ("&".equals(name)) {
             op = BinaryAND.create(indent, line);
+        } else if ("+".equals(name)) {
+            op = BinaryADD.create(indent, line);
+        } else if ("-".equals(name)) {
+            op = BinarySUB.create(indent, line);
+        } else if ("*".equals(name)) {
+            op = BinaryMULTI.create(indent, line);
+        } else if ("**".equals(name)) {
+            op = BinaryEXPR.create(indent, line);
+        } else if ("/".equals(name)) {
+            op = BinaryDIV.create(indent, line);
+        } else if ("\\".equals(name)) {
+            op = BinaryIDIV.create(indent, line);
+        } else if ("#".equals(name)) {
+            op = BinaryMOD.create(indent, line);
         }
         return op;
     }
