@@ -32,6 +32,9 @@ public enum ByteCode {
     BINARY_OR(false),
     BINARY_AND(false),
     BINARY_CONCAT(false),
+    UNARY_NOT(false),
+    UNARY_ADD(false),
+    UNARY_SUB(false),
     CMD(true)
     ;
 

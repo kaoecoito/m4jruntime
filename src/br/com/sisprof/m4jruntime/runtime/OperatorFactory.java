@@ -5,10 +5,10 @@ import br.com.sisprof.m4jruntime.runtime.instructions.*;
 /**
  * Created by kaoe on 13/09/16.
  */
-public class BinaryOperationFactory {
+public class OperatorFactory {
 
 
-    public static Instruction create(int indent, int line, String name) {
+    public static Instruction createBinary(int indent, int line, String name) {
         Instruction op = null;
         if ("=".equals(name)) {
             op = BinaryEQ.create(indent, line);
@@ -31,4 +31,18 @@ public class BinaryOperationFactory {
         }
         return op;
     }
+
+    public static Instruction createUnary(int indent, int line, String name) {
+        Instruction op = null;
+        if ("'".equals(name)) {
+            op = UnaryNOT.create(indent, line);
+        } else if ("+".equals(name)) {
+            op = UnaryADD.create(indent, line);
+        } else if ("-".equals(name)) {
+            op = UnarySUB.create(indent, line);
+        }
+        return op;
+    }
+
+
 }

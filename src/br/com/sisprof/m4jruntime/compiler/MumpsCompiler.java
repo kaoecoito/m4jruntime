@@ -551,7 +551,7 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
         visitExpr(ctx.expr(1));
 
         routine.add(Rotate.create(currentIndent, line, 2));
-        routine.add(BinaryOperationFactory.create(currentIndent, line, oper));
+        routine.add(OperatorFactory.createBinary(currentIndent, line, oper));
 
         return null;
     }
@@ -568,6 +568,14 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
 
     @Override
     public Object visitExprUnary(MUMPSParser.ExprUnaryContext ctx) {
+
+        int line = ctx.getStart().getLine();
+        String oper = ctx.OPER().getText();
+
+        visitExpr(ctx.expr());
+
+        routine.add(OperatorFactory.createUnary(currentIndent, line, oper));
+
         return null;
     }
 
