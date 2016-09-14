@@ -42,7 +42,7 @@ public class DatabaseKey {
     public boolean equalLevels(DatabaseKey key) {
         boolean ret = true;
         if (!this.global.equals(key.global)) return false;
-        int len = Math.min(this.size(), key.size());
+        int len = Math.min(this.size(), key.size()-1);
         for (int i=0;i<len;i++) {
             if (!this.subscripts.get(i).equals(key.subscripts.get(i))) {
                 ret = false;

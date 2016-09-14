@@ -9,6 +9,7 @@ public interface DatabaseStorage {
     String get(DatabaseKey key);
 
     DatabaseKey next(DatabaseKey key);
+    DatabaseKey prev(DatabaseKey key);
     int getStatus(DatabaseKey key);
 
     void close();

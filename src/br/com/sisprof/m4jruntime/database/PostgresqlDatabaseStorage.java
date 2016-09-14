@@ -16,8 +16,8 @@ import java.util.List;
  */
 public class PostgresqlDatabaseStorage implements DatabaseStorage {
 
-    private static final byte[] SEP = {(byte)0xFF, (byte)0x0D, (byte)0xFF};
-
+    private static final byte[] SEP = {(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
+    
     private final Connection connection;
 
     public PostgresqlDatabaseStorage(Connection connection) {
@@ -38,13 +38,14 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
 
     private PreparedStatement selectItem;
     private PreparedStatement selectNext;
-
+    private PreparedStatement selectPrev;
     private PreparedStatement insertItem;
 
     private void init() {
         try {
             selectItem = connection.prepareStatement("select value from global_dataset where key=?");
             selectNext = connection.prepareStatement("select key from global_dataset where key>? order by key limit 1");
+            selectPrev = connection.prepareStatement("select key from global_dataset where key<? order by key desc limit 1");
             insertItem = connection.prepareStatement("insert into global_dataset (key,value) values (?,?) ON CONFLICT (key) DO UPDATE SET value=?");
         } catch (SQLException e) {
             e.printStackTrace();
@@ -65,6 +66,10 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
 
 
     private byte[] toBytea(DatabaseKey key) {
+        return toBytea(key, false);
+    }
+
+    private byte[] toBytea(DatabaseKey key, boolean desc) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         try {
             List<Object> subscript = key.getSubscripts();
@@ -73,7 +78,7 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
                 for (Object item:subscript) {
                     stream.write(SEP);
                     if (item instanceof String && item.toString().isEmpty()) {
-                        stream.write(0x00);
+                        stream.write(desc?0xFF:0x00);
                     } else if (item instanceof Number) {
                         stream.write(0x01);
                         byte[] bs = ByteBuffer.allocate(8).putDouble(((Number)item).doubleValue()).array();
@@ -101,7 +106,7 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
                 if (isSep(bs, i)) {
                     blocks.add(out.toByteArray());
                     out.reset();
-                    i += 2;
+                    i += (SEP.length-1);
                 } else {
                     out.write(bs[i]);
                 }
@@ -177,19 +182,50 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
         DatabaseKey next = null;
         try {
             byte[] bs = toBytea(key);
-            byte[] buffer = new byte[bs.length+1];
+            byte[] buffer = new byte[bs.length+SEP.length];
             System.arraycopy(bs, 0, buffer, 0, bs.length);
-            buffer[bs.length] = (byte)0xFF;
+            for (int i=0;i<SEP.length;i++) {
+                buffer[bs.length+i] = (byte) 0xFF;
+            }
             selectNext.setBytes(1, buffer);
             ResultSet result = selectNext.executeQuery();
             if (result.next()) {
-                next = toKey(result.getBytes(1)).toSubscriptIndex(key.size());
+                DatabaseKey nextKey = toKey(result.getBytes(1));
+                if (nextKey.size()==key.size() && nextKey.equalLevels(key)) {
+                    next = nextKey.toSubscriptIndex(key.size());
+                } else if (nextKey.size()>key.size()) {
+                    next = nextKey.toSubscriptIndex(key.size());
+                }
             }
             result.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return next;
+    }
+
+    @Override
+    public DatabaseKey prev(DatabaseKey key) {
+        DatabaseKey prev = null;
+        try {
+            byte[] bs = toBytea(key, true);
+            byte[] buffer = new byte[bs.length];
+            System.arraycopy(bs, 0, buffer, 0, bs.length);
+            selectPrev.setBytes(1, buffer);
+            ResultSet result = selectPrev.executeQuery();
+            if (result.next()) {
+                DatabaseKey prevKey = toKey(result.getBytes(1));
+                if (prevKey.size()==key.size() && prevKey.equalLevels(key)) {
+                    prev = prevKey.toSubscriptIndex(key.size());
+                } else if (prevKey.size()>key.size()) {
+                    prev = prevKey.toSubscriptIndex(key.size());
+                }
+            }
+            result.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return prev;
     }
 
     @Override

@@ -29,6 +29,15 @@ public class Main {
         DatabaseKey key4 = DatabaseKey.create("^tmp",2);
         DatabaseKey key5 = DatabaseKey.create("^tmp","N2","N21");
 
+        storage.set(DatabaseKey.create("^tmp",2, 1),"");
+        storage.set(DatabaseKey.create("^tmp",3, 1),"");
+        storage.set(DatabaseKey.create("^tmp",2.5),"");
+        storage.set(DatabaseKey.create("^tmp","a"),"");
+        storage.set(DatabaseKey.create("^tmp","b"),"");
+        storage.set(DatabaseKey.create("^tmp","c"),"");
+        storage.set(DatabaseKey.create("^tmp","}"),"");
+        storage.set(DatabaseKey.create("^tmp","}}"),"");
+
         storage.set(key1,"Teste 1");
         storage.set(key2,"Teste 2");
         storage.set(key3,"Teste 3");
@@ -41,11 +50,20 @@ public class Main {
         System.out.println("Teste 4: "+storage.get(key4));
         System.out.println("Teste 5: "+storage.get(key5));
 
+        System.out.println("Order Next");
         DatabaseKey item = DatabaseKey.create("^tmp","");
         while (true) {
             item = storage.next(item);
             if (item==null) break;
-            System.out.println("Order Key: "+item.toString());
+            System.out.println("Order Next Key: "+item.toString());
+        }
+
+        System.out.println("Order Prev");
+        item = DatabaseKey.create("^tmp","");
+        while (true) {
+            item = storage.prev(item);
+            if (item==null) break;
+            System.out.println("Order Prev Key: "+item.toString());
         }
 
         System.out.println("Data 1: "+storage.getStatus(key1));
