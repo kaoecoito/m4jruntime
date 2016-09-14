@@ -1,19 +1,63 @@
 package br.com.sisprof.m4jruntime;
 
-import br.com.sisprof.m4jruntime.compiler.MumpsCompiler;
-import br.com.sisprof.m4jruntime.runtime.Routine;
-import br.com.sisprof.m4jruntime.runtime.VirtualMachine;
+import br.com.sisprof.m4jruntime.database.DatabaseKey;
+import br.com.sisprof.m4jruntime.database.DatabaseStorage;
+import br.com.sisprof.m4jruntime.database.PostgresqlDatabaseFactory;
+import org.postgresql.ds.PGSimpleDataSource;
 
-import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 
 /**
  * Created by kaoe on 06/09/16.
  */
 public class Main {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, SQLException {
 
+        PGSimpleDataSource dataSource = new PGSimpleDataSource();
+        dataSource.setServerName("localhost");
+        dataSource.setDatabaseName("mumps");
+        dataSource.setUser("postgres");
+
+        PostgresqlDatabaseFactory databaseFactory = PostgresqlDatabaseFactory.newFactory(dataSource);
+        DatabaseStorage storage = databaseFactory.create();
+
+        DatabaseKey key1 = DatabaseKey.create("^tmp","N1");
+        DatabaseKey key2 = DatabaseKey.create("^tmp","N1","N11");
+        DatabaseKey key3 = DatabaseKey.create("^tmp",1);
+        DatabaseKey key4 = DatabaseKey.create("^tmp",2);
+        DatabaseKey key5 = DatabaseKey.create("^tmp","N2","N21");
+
+        storage.set(key1,"Teste 1");
+        storage.set(key2,"Teste 2");
+        storage.set(key3,"Teste 3");
+        storage.set(key4,"Teste 4");
+        storage.set(key5,"Teste 5");
+
+        System.out.println("Teste 1: "+storage.get(key1));
+        System.out.println("Teste 2: "+storage.get(key2));
+        System.out.println("Teste 3: "+storage.get(key3));
+        System.out.println("Teste 4: "+storage.get(key4));
+        System.out.println("Teste 5: "+storage.get(key5));
+
+        DatabaseKey item = DatabaseKey.create("^tmp","");
+        while (true) {
+            item = storage.next(item);
+            if (item==null) break;
+            System.out.println("Order Key: "+item.toString());
+        }
+
+        System.out.println("Data 1: "+storage.getStatus(key1));
+        System.out.println("Data 2: "+storage.getStatus(key2));
+        System.out.println("Data 3: "+storage.getStatus(key3));
+        System.out.println("Data 4: "+storage.getStatus(key4));
+        System.out.println("Data 5: "+storage.getStatus(key5));
+
+
+        storage.close();
+
+        /*
         MumpsCompiler compiler = new MumpsCompiler(new File("/home/kaoe/Downloads/TESTE.m"));
         compiler.compile();
         Routine routine = compiler.getRoutine();
@@ -22,6 +66,7 @@ public class Main {
 
         VirtualMachine machine = VirtualMachine.newVirtualMachine();
         machine.run(routine);
+        */
 
     }
 

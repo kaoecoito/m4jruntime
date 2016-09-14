@@ -12,5 +12,6 @@
     <orderEntry type="library" name="org.antlr:antlr4:4.5.3" level="project" />
     <orderEntry type="library" name="jline:jline:2.14.2" level="project" />
     <orderEntry type="library" name="joda-time:joda-time:2.9.4" level="project" />
+    <orderEntry type="library" name="org.postgresql:postgresql:9.4-1200-jdbc41" level="project" />
   </component>
 </module>
