@@ -547,11 +547,28 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
         int line = ctx.getStart().getLine();
         String oper = ctx.OPER().getText();
 
-        visitExpr(ctx.expr(0));
-        visitExpr(ctx.expr(1));
+        MUMPSParser.ExprContext left = ctx.expr(0);
 
-        routine.add(Rotate.create(currentIndent, line, 2));
-        routine.add(OperatorFactory.createBinary(currentIndent, line, oper));
+        if (left instanceof MUMPSParser.ExprFormatContext && !((MUMPSParser.ExprFormatContext)left).format().OPER().isEmpty()) {
+            MUMPSParser.FormatContext format = ((MUMPSParser.ExprFormatContext)left).format();
+            List<String> opers = new ArrayList<>();
+            for (TerminalNode node:format.OPER()) {
+                opers.add(node.getText());
+            }
+            visitExpr(ctx.expr(1));
+            routine.add(OperatorFactory.createUnary(currentIndent, line, oper));
+
+            Collections.reverse(opers);
+            for (String item:opers) {
+                routine.add(OperatorFactory.createUnary(currentIndent, line, item));
+            }
+        } else {
+            visitExpr(left);
+            visitExpr(ctx.expr(1));
+
+            routine.add(Rotate.create(currentIndent, line, 2));
+            routine.add(OperatorFactory.createBinary(currentIndent, line, oper));
+        }
 
         return null;
     }

@@ -43,8 +43,15 @@ public abstract class NumberOperations {
         if (value!=null) {
             StringBuilder builder = new StringBuilder();
             char[] digits = value.toCharArray();
-            for (char digit:digits) {
-                if (!Character.isDigit(digit) && digit!='.') {
+            boolean hasPoint = false;
+            for (int i=0;i<digits.length;i++) {
+                char digit = digits[i];
+                if ((digit=='-' || digit=='+') && i==0) {
+                    builder.append(digit);
+                } else if (digit=='.' && !hasPoint) {
+                    builder.append(digit);
+                    hasPoint = true;
+                } else if (!Character.isDigit(digit)) {
                     break;
                 } else {
                     builder.append(digit);

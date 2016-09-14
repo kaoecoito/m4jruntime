@@ -28,7 +28,12 @@ public class UnaryNOT extends AbstractInstruction {
     @Override
     public CallAction execute(Frame frame) {
         MValue v1 = frame.pop();
-        boolean result = !NumberOperations.isFalse(v1);
+        boolean result;
+        if (!NumberOperations.isNumber(v1.getValue().toString())) {
+            result = !NumberOperations.isFalse(v1);
+        } else {
+            result = v1.toNumber().doubleValue()==0d;
+        }
         frame.push(new MValueNumber(result?1:0));
         return CallAction.None;
     }
