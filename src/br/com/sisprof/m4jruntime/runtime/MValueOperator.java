@@ -3,7 +3,7 @@ package br.com.sisprof.m4jruntime.runtime;
 /**
  * Created by kaoe on 12/09/16.
  */
-public class MValueOperator implements MValue<String> {
+public class MValueOperator extends MValue<String> {
 
     private final String value;
 
@@ -17,7 +17,7 @@ public class MValueOperator implements MValue<String> {
     }
 
     @Override
-    public MValue clone() {
+    public MValue cloneValue() {
         return new MValueOperator(value);
     }
 

@@ -31,7 +31,7 @@ public class DefaultFunctions {
         Variable variable = vm.getFrame().getGlobalScope().getVariable("$TEST");
         int ret = 0;
         if (variable!=null) {
-            if (!MumpsUtil.isFalse(variable.getValue())) {
+            if (!NumberOperations.isFalse(variable.getValue())) {
                 ret = 1;
             }
         }

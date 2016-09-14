@@ -3,14 +3,30 @@ package br.com.sisprof.m4jruntime.runtime;
 /**
  * Created by kaoe on 09/09/16.
  */
-public interface MValue<T> extends Comparable<MValue> {
+public abstract class MValue<T> implements Comparable<MValue> {
 
-    MValue NULL = new MValueString("");
+    public static final MValue NULL = new MValueString("");
 
-    T getValue();
+    public abstract T getValue();
 
-    MValue clone();
+    public abstract MValue cloneValue();
 
-    Number toNumber();
+    public abstract Number toNumber();
+
+    public static MValue create(String value) {
+        return new MValueString(value);
+    }
+
+    public static MValue create(double value) {
+        return new MValueNumber(value);
+    }
+
+    public static MValue create(long value) {
+        return new MValueNumber(value);
+    }
+
+    public static MValue create(int value) {
+        return new MValueNumber(Long.valueOf(value));
+    }
 
 }

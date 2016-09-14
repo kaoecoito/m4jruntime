@@ -3,7 +3,7 @@ package br.com.sisprof.m4jruntime.runtime;
 /**
  * Created by kaoe on 12/09/16.
  */
-public abstract class MumpsUtil {
+public abstract class NumberOperations {
 
 
     public static boolean isNull(MValue test) {
@@ -67,16 +67,16 @@ public abstract class MumpsUtil {
     public static  Long toLong(String value) {
         Number number = toNumber(value);
         if (number instanceof Long) {
-            return (Long)number;
+            return number.longValue();
         } else {
-            return ((Double)number).longValue();
+            return number.longValue();
         }
     }
 
     public static  Double toDouble(String value) {
         Number number = toNumber(value);
         if (number instanceof Double) {
-            return (Double) number;
+            return number.doubleValue();
         } else {
             return number.doubleValue();
         }
@@ -85,9 +85,9 @@ public abstract class MumpsUtil {
     public static int compareAsNumber(String number1, String number2) {
         Number value = toNumber(number1);
         if (value instanceof Long) {
-            return ((Long)value).compareTo(MumpsUtil.toLong(number2.toString()));
+            return ((Long)value).compareTo(NumberOperations.toLong(number2.toString()));
         } else {
-            return ((Double)value).compareTo(MumpsUtil.toDouble(number2.toString()));
+            return ((Double)value).compareTo(NumberOperations.toDouble(number2.toString()));
         }
     }
 

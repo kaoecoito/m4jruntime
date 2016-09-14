@@ -17,8 +17,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.text.NumberFormat;
-import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -625,7 +623,7 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
             String strVal = ctx.STR_LITERAL().getText();
             val = new ConstantValueString(strVal.substring(1, strVal.length()-1));
         } else if (ctx.NUM_LITERAL()!=null) {
-            val = new ConstantValueNumber(MumpsUtil.toNumber(ctx.NUM_LITERAL().getText()));
+            val = new ConstantValueNumber(NumberOperations.toNumber(ctx.NUM_LITERAL().getText()));
         }
         int constantIndex = routine.add(val);
         routine.add(Constant.create(currentIndent, line, constantIndex));

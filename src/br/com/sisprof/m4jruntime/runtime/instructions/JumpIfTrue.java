@@ -32,7 +32,7 @@ public class JumpIfTrue extends JumpInstruction {
     @Override
     public CallAction execute(Frame frame) {
         MValue test = frame.pop();
-        if (!MumpsUtil.isFalse(test)) {
+        if (!NumberOperations.isFalse(test)) {
             frame.jump(jump);
         }
         return CallAction.None;

@@ -36,7 +36,7 @@ public class MValueMultiVar implements MValue<Integer> {
         } else if (items.size()==3) {
             if (currentValue==null) {
                 ret = true;
-            } else if (MumpsUtil.compareAsNumber(currentValue.toString(), items.get(2).getValue().toString())<0) {
+            } else if (NumberOperations.compareAsNumber(currentValue.toString(), items.get(2).getValue().toString())<0) {
                 ret = true;
             }
         }

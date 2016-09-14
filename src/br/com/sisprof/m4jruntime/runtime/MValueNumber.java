@@ -3,7 +3,7 @@ package br.com.sisprof.m4jruntime.runtime;
 /**
  * Created by kaoe on 09/09/16.
  */
-public class MValueNumber implements MValue<Number> {
+public class MValueNumber extends MValue<Number> {
 
     private final Number value;
 
@@ -17,7 +17,7 @@ public class MValueNumber implements MValue<Number> {
     }
 
     @Override
-    public MValue clone() {
+    public MValue cloneValue() {
         if (value instanceof Long) {
             return new MValueNumber(value.longValue());
         } else if (value instanceof Integer) {
@@ -38,6 +38,6 @@ public class MValueNumber implements MValue<Number> {
         if (value==null && o==null) return 0;
         if (value==null) return -1;
         if (o==null || o.getValue()==null) return 1;
-        return MumpsUtil.compareAsNumber(value.toString(), o.getValue().toString());
+        return NumberOperations.compareAsNumber(value.toString(), o.getValue().toString());
     }
 }

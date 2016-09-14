@@ -3,7 +3,7 @@ package br.com.sisprof.m4jruntime.runtime;
 /**
  * Created by kaoe on 09/09/16.
  */
-public class MValueString implements MValue<String> {
+public class MValueString extends MValue<String> {
 
     private final String value;
 
@@ -17,13 +17,13 @@ public class MValueString implements MValue<String> {
     }
 
     @Override
-    public MValue clone() {
+    public MValue cloneValue() {
         return new MValueString(value);
     }
 
     @Override
     public Number toNumber() {
-        return MumpsUtil.toNumber(value);
+        return NumberOperations.toNumber(value);
     }
 
     @Override
@@ -31,8 +31,8 @@ public class MValueString implements MValue<String> {
         if (value==null && o==null) return 0;
         if (value==null) return -1;
         if (o==null || o.getValue()==null) return 1;
-        if (MumpsUtil.isNumber(value) && MumpsUtil.isNumber(o.getValue().toString())) {
-            return MumpsUtil.compareAsNumber(value.toString(), o.getValue().toString());
+        if (NumberOperations.isNumber(value) && NumberOperations.isNumber(o.getValue().toString())) {
+            return NumberOperations.compareAsNumber(value.toString(), o.getValue().toString());
         } else {
             return value.compareTo(o.getValue().toString());
         }

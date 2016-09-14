@@ -29,7 +29,7 @@ public class Duplicate extends AbstractInstruction {
     public CallAction execute(Frame frame) {
         MValue value = frame.pop();
         frame.push(value);
-        frame.push(value.clone());
+        frame.push(value.cloneValue());
         return CallAction.None;
     }
 }
