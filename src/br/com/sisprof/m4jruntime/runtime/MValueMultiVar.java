@@ -45,7 +45,7 @@ public class MValueMultiVar extends MValue<Integer> {
 
     public MValue next() {
         if (currentValue==null) {
-            currentValue = (Long)items.get(0).toNumber();
+            currentValue = items.get(0).toNumber();
         } else {
             Number valInc = items.get(1).toNumber();
             if (valInc instanceof Long) {
