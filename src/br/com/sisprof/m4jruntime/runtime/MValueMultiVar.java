@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Created by kaoe on 12/09/16.
  */
-public class MValueMultiVar implements MValue<Integer> {
+public class MValueMultiVar extends MValue<Integer> {
 
     private final List<MValue> items;
     private Number currentValue;
@@ -21,7 +21,7 @@ public class MValueMultiVar implements MValue<Integer> {
     }
 
     @Override
-    public MValue clone() {
+    public MValue cloneValue() {
         return new MValueMultiVar(items);
     }
 
