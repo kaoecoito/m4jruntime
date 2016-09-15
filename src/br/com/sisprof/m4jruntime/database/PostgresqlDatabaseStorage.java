@@ -3,6 +3,8 @@ package br.com.sisprof.m4jruntime.database;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,6 +17,8 @@ import java.util.List;
  * Created by kaoe on 14/09/16.
  */
 public class PostgresqlDatabaseStorage implements DatabaseStorage {
+
+    private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
     private static final byte[] SEP = {(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
     
@@ -69,11 +73,11 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
         return toBytea(key, false);
     }
 
-    private byte[] toBytea(DatabaseKey key, boolean desc) {
+    public byte[] toBytea(DatabaseKey key, boolean desc) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         try {
             List<Object> subscript = key.getSubscripts();
-            stream.write(key.getGlobal().getBytes("UTF-8"));
+            stream.write(key.getGlobal().getBytes(DEFAULT_CHARSET));
             if (!subscript.isEmpty()) {
                 for (Object item:subscript) {
                     stream.write(SEP);
@@ -85,11 +89,10 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
                         stream.write(bs);
                     } else {
                         stream.write(0x02);
-                        stream.write(item.toString().getBytes("UTF-8"));
+                        stream.write(item.toString().getBytes(DEFAULT_CHARSET));
                     }
                 }
             }
-            stream.write(0xFF);
             stream.flush();
         } catch (IOException e) {
             e.printStackTrace();
@@ -102,7 +105,7 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
         if (bs!=null && bs.length>0) {
             List<byte[]> blocks = new ArrayList<>();
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            for (int i=0;i<bs.length-1;i++) {
+            for (int i=0;i<bs.length;i++) {
                 if (isSep(bs, i)) {
                     blocks.add(out.toByteArray());
                     out.reset();
@@ -136,7 +139,7 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
                             subscripts.add(num.longValue());
                         }
                     } else if (type==0x02) {
-                        subscripts.add(new String(content));
+                        subscripts.add(new String(content, DEFAULT_CHARSET));
                     }
                 }
                 if (subscripts.isEmpty()) {
@@ -181,12 +184,14 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
     public DatabaseKey next(DatabaseKey key) {
         DatabaseKey next = null;
         try {
+
             byte[] bs = toBytea(key);
-            byte[] buffer = new byte[bs.length+SEP.length];
+            byte[] buffer = new byte[bs.length+SEP.length+1];
             System.arraycopy(bs, 0, buffer, 0, bs.length);
             for (int i=0;i<SEP.length;i++) {
                 buffer[bs.length+i] = (byte) 0xFF;
             }
+            buffer[buffer.length-1] = (byte) 0xFF;
             selectNext.setBytes(1, buffer);
             ResultSet result = selectNext.executeQuery();
             if (result.next()) {

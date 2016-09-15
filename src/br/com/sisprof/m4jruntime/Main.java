@@ -32,17 +32,19 @@ public class Main {
         storage.set(DatabaseKey.create("^tmp",2, 1),"");
         storage.set(DatabaseKey.create("^tmp",3, 1),"");
         storage.set(DatabaseKey.create("^tmp",2.5),"");
+        storage.set(DatabaseKey.create("^tmp","N12"),"N12");
         storage.set(DatabaseKey.create("^tmp","a"),"");
         storage.set(DatabaseKey.create("^tmp","b"),"");
         storage.set(DatabaseKey.create("^tmp","c"),"");
-        storage.set(DatabaseKey.create("^tmp","}"),"");
-        storage.set(DatabaseKey.create("^tmp","}}"),"");
+        storage.set(DatabaseKey.create("^tmp","}"),"}");
+        storage.set(DatabaseKey.create("^tmp","}}"),"}}");
+        storage.set(DatabaseKey.create("^tmp","}}}"),"}}}");
 
-        storage.set(key1,"Teste 1");
-        storage.set(key2,"Teste 2");
+        storage.set(key1,"N1");
+        storage.set(key2,"N1,N11");
         storage.set(key3,"Teste 3");
         storage.set(key4,"Teste 4");
-        storage.set(key5,"Teste 5");
+        storage.set(key5,"N2,N21");
 
         System.out.println("Teste 1: "+storage.get(key1));
         System.out.println("Teste 2: "+storage.get(key2));
