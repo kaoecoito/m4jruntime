@@ -15,6 +15,11 @@ import java.util.Set;
  */
 public class PostgresqlDatabaseStorage implements DatabaseStorage {
 
+    private enum SearchDirection {
+        FORWARD,
+        BACKWARD
+    }
+
     private static final int[] ESPECIAL_CHARS = {
             'ç','Ç',
             'á','Á','â','Â','ã','Ã','à','À','ä','Ä',
@@ -53,12 +58,17 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
     private PreparedStatement selectPrev;
     private PreparedStatement insertItem;
 
+    private PreparedStatement deleteItem;
+    private PreparedStatement deleteAll;
+
     private void init() {
         try {
             selectItem = connection.prepareStatement("select value from global_dataset where key=?");
             selectNext = connection.prepareStatement("select key from global_dataset where key>? order by key limit 1");
             selectPrev = connection.prepareStatement("select key from global_dataset where key<? order by key desc limit 1");
             insertItem = connection.prepareStatement("insert into global_dataset (key,value) values (?,?) ON CONFLICT (key) DO UPDATE SET value=?");
+            deleteItem = connection.prepareStatement("delete from global_dataset where key=?");
+            deleteAll = connection.prepareStatement("delete from global_dataset where key>? and key<?");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -239,7 +249,7 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
             ResultSet result = selectNext.executeQuery();
             if (result.next()) {
                 DatabaseKey tmpNext = toKey(result.getBytes(1)).toSubscriptIndex(key.size());
-                if (tmpNext.size()>=key.size()) {
+                if (tmpNext.size()>=key.size() && tmpNext.equalParent(key)) {
                     next = tmpNext;
                 }
             }
@@ -262,7 +272,7 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
             ResultSet result = selectPrev.executeQuery();
             if (result.next()) {
                 DatabaseKey tmpPrev = toKey(result.getBytes(1)).toSubscriptIndex(key.size());
-                if (tmpPrev.size()>=key.size()) {
+                if (tmpPrev.size()>=key.size() && tmpPrev.equalParent(key)) {
                     prev = tmpPrev;
                 }
             }
@@ -274,11 +284,40 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
     }
 
     @Override
+    public boolean delete(DatabaseKey key) {
+        boolean result = false;
+        try {
+            deleteItem.setBytes(1, toBytea(key));
+            result = (deleteItem.executeUpdate()>0);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    @Override
+    public int deleteAll(DatabaseKey key) {
+        int result = 0;
+        try {
+            deleteItem.setBytes(1, toBytea(key));
+            result = deleteItem.executeUpdate();
+
+            DatabaseKey nextKey = key.nextSubscript();
+            deleteAll.setBytes(1, toByteaSearch(nextKey, SearchDirection.FORWARD));
+            deleteAll.setBytes(2, toByteaSearch(nextKey, SearchDirection.BACKWARD));
+            result += deleteAll.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    @Override
     public int getStatus(DatabaseKey key) {
         boolean contemValue = (get(key)!=null);
 
         DatabaseKey nextKey = next(key.nextSubscript());
-        boolean contemSub = (nextKey!=null && nextKey.equalLevels(key));
+        boolean contemSub = (nextKey!=null && nextKey.equalParent(key));
         int ret = 0;
         if (contemValue && contemSub) {
             ret = 11;
@@ -290,8 +329,5 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
         return ret;
     }
 
-    private enum SearchDirection {
-        FORWARD,
-        BACKWARD
-    }
+
 }

@@ -11,6 +11,8 @@ public interface DatabaseStorage {
     DatabaseKey next(DatabaseKey key);
     DatabaseKey prev(DatabaseKey key);
     int getStatus(DatabaseKey key);
+    boolean delete(DatabaseKey key);
+    int deleteAll(DatabaseKey key);
 
     void close();
 

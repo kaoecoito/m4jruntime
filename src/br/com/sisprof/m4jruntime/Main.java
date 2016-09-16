@@ -32,6 +32,13 @@ public class Main {
         testRead(storage);
         //testInsert(storage);
 
+        /*
+        long start = System.currentTimeMillis();
+        storage.deleteAll(DatabaseKey.create("^GPB","PI"));
+        long end = System.currentTimeMillis()-start;
+        System.out.println("Delete em "+end+"ms\n");
+        */
+
         storage.close();
 
     }
@@ -56,6 +63,8 @@ public class Main {
         }
         end = System.currentTimeMillis()-start;
         System.out.println("Loop negativo em "+end+"ms\n");
+
+        System.out.println("$D()="+storage.getStatus(DatabaseKey.create("^GPB","SP")));
     }
 
     private static void testGOF(DatabaseStorage storage) throws IOException {
