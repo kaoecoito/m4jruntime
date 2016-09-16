@@ -14,7 +14,7 @@ public class DatabaseKey {
     private final List<Object> subscripts = new ArrayList<>();
 
     private DatabaseKey(String global) {
-        this.global = global.substring(1);
+        this.global = global;
     }
 
     public static DatabaseKey create(String global,Object... subscripts) {
