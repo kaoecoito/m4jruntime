@@ -1,5 +1,7 @@
 package br.com.sisprof.m4jruntime.database;
 
+import java.util.function.BiConsumer;
+
 /**
  * Created by kaoe on 14/09/16.
  */
@@ -7,6 +9,8 @@ public interface DatabaseStorage {
 
     void set(DatabaseKey key, String value);
     String get(DatabaseKey key);
+
+    void getAll(DatabaseKey key, BiConsumer<DatabaseKey,String> callback);
 
     DatabaseKey next(DatabaseKey key);
     DatabaseKey prev(DatabaseKey key);

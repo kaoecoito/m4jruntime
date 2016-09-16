@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.BiConsumer;
 
 /**
  * Created by kaoe on 14/09/16.
@@ -53,6 +54,7 @@ class PostgresqlDatabaseStorage implements DatabaseStorage {
     }
 
     private PreparedStatement selectItem;
+    private PreparedStatement selectAll;
     private PreparedStatement selectNext;
     private PreparedStatement selectPrev;
 
@@ -68,6 +70,7 @@ class PostgresqlDatabaseStorage implements DatabaseStorage {
     private void init() {
         try {
             selectItem = connection.prepareStatement("select value from global_dataset where key=?");
+            selectAll = connection.prepareStatement("select key, value from global_dataset where key>? and key<?");
             selectNext = connection.prepareStatement("select key from global_dataset where key>? order by key limit 1");
             selectPrev = connection.prepareStatement("select key from global_dataset where key<? order by key desc limit 1");
 
@@ -273,7 +276,7 @@ class PostgresqlDatabaseStorage implements DatabaseStorage {
             }
             ResultSet result = selectNext.executeQuery();
             if (result.next()) {
-                DatabaseKey tmpNext = toKey(result.getBytes(1)).toSubscriptIndex(key.size());
+                DatabaseKey tmpNext = toKey(result.getBytes("key")).toSubscriptIndex(key.size());
                 if (tmpNext.size()>=key.size() && tmpNext.equalParent(key)) {
                     next = tmpNext;
                 }
@@ -296,7 +299,7 @@ class PostgresqlDatabaseStorage implements DatabaseStorage {
             }
             ResultSet result = selectPrev.executeQuery();
             if (result.next()) {
-                DatabaseKey tmpPrev = toKey(result.getBytes(1)).toSubscriptIndex(key.size());
+                DatabaseKey tmpPrev = toKey(result.getBytes("key")).toSubscriptIndex(key.size());
                 if (tmpPrev.size()>=key.size() && tmpPrev.equalParent(key)) {
                     prev = tmpPrev;
                 }
@@ -335,6 +338,28 @@ class PostgresqlDatabaseStorage implements DatabaseStorage {
             e.printStackTrace();
         }
         return result;
+    }
+
+    @Override
+    public void getAll(DatabaseKey key, BiConsumer<DatabaseKey, String> callback) {
+        try {
+            String value = get(key);
+            if (value!=null) {
+                callback.accept(key, value);
+            }
+            DatabaseKey nextKey = key.nextSubscript();
+            selectAll.setBytes(1, toByteaSearch(nextKey, SearchDirection.FORWARD));
+            selectAll.setBytes(2, toByteaSearch(nextKey, SearchDirection.BACKWARD));
+            ResultSet result = selectAll.executeQuery();
+            while (result.next()) {
+                DatabaseKey foundKey = toKey(result.getBytes("key"));
+                String foundValue = result.getString("value");
+                callback.accept(foundKey, foundValue);
+            }
+            result.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

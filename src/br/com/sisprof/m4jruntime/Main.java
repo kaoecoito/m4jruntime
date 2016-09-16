@@ -28,11 +28,20 @@ public class Main {
         PostgresqlDatabaseFactory databaseFactory = PostgresqlDatabaseFactory.newFactory(dataSource);
         DatabaseStorage storage = databaseFactory.create();
 
-        testGOF(storage);
-        //testRead(storage);
+        //testGOF(storage);
+        testRead(storage);
         //storage.deleteAll(DatabaseKey.create("GPB"));
         //testInsert(storage);
 
+        /*
+        storage.getAll(DatabaseKey.create("GPB","SP","SANTO ANDRE"), (key, value) -> {
+            if (value.length()>20) {
+                System.out.println(key+" => "+value.substring(0, 20)+"...");
+            } else {
+                System.out.println(key+" => "+value);
+            }
+        });
+        */
 
         /*
         storage.deleteAll(DatabaseKey.create("B"));
