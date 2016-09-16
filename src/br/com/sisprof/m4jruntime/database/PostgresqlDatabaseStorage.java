@@ -223,11 +223,15 @@ class PostgresqlDatabaseStorage implements DatabaseStorage {
         return nullExists;
     }
 
+    private String getNullString(String value) {
+        return (value==null?"":value);
+    }
+
     @Override
     public void set(DatabaseKey key, String value) {
         try {
             insertItem.setBytes(1, toBytea(key));
-            insertItem.setString(2, value);
+            insertItem.setString(2, getNullString(value));
             insertItem.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

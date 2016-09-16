@@ -47,9 +47,6 @@ public class StoreGlobal extends AbstractInstruction {
             }
         }
         String value = frame.pop().getValue().toString();
-        if (value==null) {
-            value = "";
-        }
 
         VirtualMachine vm = VirtualMachine.getCurrent();
         DatabaseKey key;
