@@ -10,7 +10,7 @@ import java.util.*;
 /**
  * Created by kaoe on 14/09/16.
  */
-public class PostgresqlDatabaseStorage implements DatabaseStorage {
+class PostgresqlDatabaseStorage implements DatabaseStorage {
 
     private enum SearchDirection {
         FORWARD,
@@ -36,7 +36,7 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
 
     private Deque<Integer> transactionStack = new LinkedList<>();
 
-    public PostgresqlDatabaseStorage(Connection connection) {
+    PostgresqlDatabaseStorage(Connection connection) {
         this.connection = connection;
         this.init();
     }
@@ -85,7 +85,7 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
         }
     }
 
-    public byte[] toBytea(DatabaseKey key) {
+    private byte[] toBytea(DatabaseKey key) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         DataOutputStream output = new DataOutputStream(stream);
         try {
@@ -117,7 +117,7 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
         return stream.toByteArray();
     }
 
-    public byte[] toByteaSearch(DatabaseKey key, SearchDirection direction) {
+    private byte[] toByteaSearch(DatabaseKey key, SearchDirection direction) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         DataOutputStream output = new DataOutputStream(stream);
         try {
