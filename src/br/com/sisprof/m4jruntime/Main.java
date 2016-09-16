@@ -29,8 +29,25 @@ public class Main {
         DatabaseStorage storage = databaseFactory.create();
 
         //testGOF(storage);
-        testRead(storage);
+        //testRead(storage);
+        //storage.deleteAll(DatabaseKey.create("^GPB"));
         //testInsert(storage);
+
+        /*
+        storage.startTransaction();
+        storage.set(DatabaseKey.create("^OLA",1),"1");
+        storage.startTransaction();
+        storage.set(DatabaseKey.create("^OLA",2),"2");
+        storage.commit();
+        storage.commit();
+        */
+
+        DatabaseKey item = DatabaseKey.create("^OLA","");
+        while (true) {
+            item = storage.next(item);
+            if (item==null) break;
+            System.out.println(item+"="+storage.get(item));
+        }
 
         /*
         long start = System.currentTimeMillis();
@@ -71,12 +88,14 @@ public class Main {
         GOFImport gof = new GOFImport(new File("/home/kaoe/Downloads/GPB.GO"));
         gof.open();
 
+        storage.startTransaction();
         long start = System.currentTimeMillis();
         gof.lines().forEachRemaining((record) -> {
             DatabaseKey key = record.getDatabase();
             System.out.println(key);
             storage.set(key, record.getContent());
         });
+        storage.commit();
 
         long end = System.currentTimeMillis()-start;
         System.out.println("Importado dados em "+end+"ms");

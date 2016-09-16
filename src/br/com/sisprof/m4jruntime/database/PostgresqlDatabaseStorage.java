@@ -5,10 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by kaoe on 14/09/16.
@@ -36,6 +33,8 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
     }
 
     private final Connection connection;
+
+    private Deque<Integer> transactionStack = new LinkedList<>();
 
     public PostgresqlDatabaseStorage(Connection connection) {
         this.connection = connection;
@@ -310,6 +309,60 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
             e.printStackTrace();
         }
         return result;
+    }
+
+    @Override
+    public void startTransaction() {
+        try {
+            if (transactionStack.isEmpty()) {
+                connection.setAutoCommit(false);
+                connection.prepareCall("BEGIN TRANSACTION").execute();
+                transactionStack.addFirst(1);
+            } else {
+                int level = transactionStack.size()+1;
+                transactionStack.addFirst(level);
+                connection.prepareCall("SAVEPOINT TLEVEL"+level).execute();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void commit() {
+        if (transactionStack.isEmpty()) return; // TODO Implement Exception
+        try {
+            int level = transactionStack.removeFirst();
+            if (level==1) {
+                connection.prepareCall("COMMIT").execute();
+                connection.setAutoCommit(true);
+            } else {
+                connection.prepareCall("RELEASE SAVEPOINT TLEVEL"+level).execute();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void rollback() {
+        if (transactionStack.isEmpty()) return; // TODO Implement Exception
+        try {
+            int level = transactionStack.removeFirst();
+            if (level==1) {
+                connection.prepareCall("ROLLBACK").execute();
+                connection.setAutoCommit(true);
+            } else {
+                connection.prepareCall("ROLLBACK TO SAVEPOINT TLEVEL"+level).execute();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public int getTransactionLevel() {
+        return transactionStack.size();
     }
 
     @Override
