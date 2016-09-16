@@ -68,6 +68,8 @@ public class Main {
             System.out.println("Order Prev Key: "+item.toString());
         }
 
+        System.out.println(storage.getStatus(key3));
+
         System.out.println("Data 1: "+storage.getStatus(key1)+" => "+key1.toString());
         System.out.println("Data 2: "+storage.getStatus(key2)+" => "+key2.toString());
         System.out.println("Data 3: "+storage.getStatus(key3)+" => "+key3.toString());
