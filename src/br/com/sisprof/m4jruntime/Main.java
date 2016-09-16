@@ -29,7 +29,7 @@ public class Main {
         DatabaseStorage storage = databaseFactory.create();
 
         //testGOF(storage);
-        //testRead(storage);
+        testRead(storage);
         //storage.deleteAll(DatabaseKey.create("^GPB"));
         //testInsert(storage);
 
