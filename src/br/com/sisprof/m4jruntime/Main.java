@@ -1,10 +1,15 @@
 package br.com.sisprof.m4jruntime;
 
+import br.com.sisprof.m4jruntime.compiler.MumpsCompiler;
 import br.com.sisprof.m4jruntime.database.DatabaseKey;
 import br.com.sisprof.m4jruntime.database.DatabaseStorage;
 import br.com.sisprof.m4jruntime.database.PostgresqlDatabaseFactory;
+import br.com.sisprof.m4jruntime.parser.GOFImport;
+import br.com.sisprof.m4jruntime.runtime.Routine;
+import br.com.sisprof.m4jruntime.runtime.VirtualMachine;
 import org.postgresql.ds.PGSimpleDataSource;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 
@@ -23,6 +28,49 @@ public class Main {
         PostgresqlDatabaseFactory databaseFactory = PostgresqlDatabaseFactory.newFactory(dataSource);
         DatabaseStorage storage = databaseFactory.create();
 
+        long start = System.currentTimeMillis();
+        DatabaseKey key = DatabaseKey.create("^GPB","");
+        while (true) {
+            key = storage.next(key);
+            if (key==null) break;
+            System.out.println(key);
+        }
+        long end = System.currentTimeMillis()-start;
+        System.out.println("Loop dados em "+end+"ms");
+
+        storage.close();
+
+    }
+
+    private void testGOF(DatabaseStorage storage) throws IOException {
+        GOFImport gof = new GOFImport(new File("/home/kaoe/Downloads/GPB.GO"));
+        gof.open();
+
+        long start = System.currentTimeMillis();
+        gof.lines().forEachRemaining((record) -> {
+            DatabaseKey key = record.getDatabase();
+            System.out.println(key);
+            storage.set(key, record.getContent());
+        });
+
+        long end = System.currentTimeMillis()-start;
+        System.out.println("Importado dados em "+end+"ms");
+        gof.close();
+    }
+
+    private void testCompiler() throws IOException {
+        MumpsCompiler compiler = new MumpsCompiler(new File("/home/kaoe/Downloads/TESTE.m"));
+        compiler.compile();
+        Routine routine = compiler.getRoutine();
+
+        routine.writeFile(new File("/home/kaoe/Downloads/TESTE.mclass"));
+
+        VirtualMachine machine = VirtualMachine.newVirtualMachine();
+        machine.run(routine);
+
+    }
+
+    private static void testInsert(DatabaseStorage storage) {
         DatabaseKey key1 = DatabaseKey.create("^tmp","N1");
         DatabaseKey key2 = DatabaseKey.create("^tmp","N1","N11");
         DatabaseKey key3 = DatabaseKey.create("^tmp",1);
@@ -68,26 +116,11 @@ public class Main {
             System.out.println("Order Prev Key: "+item.toString());
         }
 
-        System.out.println(storage.getStatus(key3));
-
         System.out.println("Data 1: "+storage.getStatus(key1)+" => "+key1.toString());
         System.out.println("Data 2: "+storage.getStatus(key2)+" => "+key2.toString());
         System.out.println("Data 3: "+storage.getStatus(key3)+" => "+key3.toString());
         System.out.println("Data 4: "+storage.getStatus(key4)+" => "+key4.toString());
         System.out.println("Data 5: "+storage.getStatus(key5)+" => "+key5.toString());
-
-        storage.close();
-
-        /*
-        MumpsCompiler compiler = new MumpsCompiler(new File("/home/kaoe/Downloads/TESTE.m"));
-        compiler.compile();
-        Routine routine = compiler.getRoutine();
-
-        routine.writeFile(new File("/home/kaoe/Downloads/TESTE.mclass"));
-
-        VirtualMachine machine = VirtualMachine.newVirtualMachine();
-        machine.run(routine);
-        */
 
     }
 
