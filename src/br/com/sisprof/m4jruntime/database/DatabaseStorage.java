@@ -16,6 +16,7 @@ public interface DatabaseStorage {
 
     void startTransaction();
     void commit();
+    void rollback(int levels);
     void rollback();
     int getTransactionLevel();
 

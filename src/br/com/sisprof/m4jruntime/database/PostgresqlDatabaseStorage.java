@@ -346,17 +346,31 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
 
     @Override
     public void rollback() {
-        if (transactionStack.isEmpty()) return; // TODO Implement Exception
-        try {
-            int level = transactionStack.removeFirst();
-            if (level==1) {
-                connection.prepareCall("ROLLBACK").execute();
-                connection.setAutoCommit(true);
-            } else {
-                connection.prepareCall("ROLLBACK TO SAVEPOINT TLEVEL"+level).execute();
+        rollback(0);
+    }
+
+    @Override
+    public void rollback(int levels) {
+        int loops;
+
+        if (levels==0) loops = transactionStack.size();
+        else if (levels<0) loops = levels * -1;
+        else loops = transactionStack.size() - levels;
+
+        while (loops-->0) {
+            if (transactionStack.isEmpty()) return; // TODO Implement Exception
+            try {
+                int level = transactionStack.removeFirst();
+                if (level == 1) {
+                    connection.prepareCall("ROLLBACK").execute();
+                    connection.setAutoCommit(true);
+                } else {
+                    connection.prepareCall("ROLLBACK TO SAVEPOINT TLEVEL" + level).execute();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                break;
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
     }
 
