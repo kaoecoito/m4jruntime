@@ -30,23 +30,23 @@ public class Main {
 
         //testGOF(storage);
         testRead(storage);
-        //storage.deleteAll(DatabaseKey.create("^GPB"));
+        //storage.deleteAll(DatabaseKey.create("GPB"));
         //testInsert(storage);
 
 
         /*
-        storage.deleteAll(DatabaseKey.create("^B"));
-        storage.set(DatabaseKey.create("^A",1),"1");
-        storage.set(DatabaseKey.create("^A",1, 2),"2");
-        storage.set(DatabaseKey.create("^A",1, 3),"3");
-        System.out.println("Merge: "+storage.merge(DatabaseKey.create("^A", 1), DatabaseKey.create("^B",5,4)));
+        storage.deleteAll(DatabaseKey.create("B"));
+        storage.set(DatabaseKey.create("A",1),"1");
+        storage.set(DatabaseKey.create("A",1, 2),"2");
+        storage.set(DatabaseKey.create("A",1, 3),"3");
+        System.out.println("Merge: "+storage.merge(DatabaseKey.create("A", 1), DatabaseKey.create("B",5,4)));
 
-        System.out.println("^A(1)="+storage.get(DatabaseKey.create("^A",1)));
-        System.out.println("^A(1,2)="+storage.get(DatabaseKey.create("^A",1, 2)));
-        System.out.println("^B(5,4,2)="+storage.get(DatabaseKey.create("^B",5,4,2)));
-        System.out.println("^B(5,4,3)="+storage.get(DatabaseKey.create("^B",5,4,3)));
-        System.out.println(storage.getStatus(DatabaseKey.create("^B")));
-        System.out.println(storage.next(DatabaseKey.create("^B","")));
+        System.out.println("A(1)="+storage.get(DatabaseKey.create("A",1)));
+        System.out.println("A(1,2)="+storage.get(DatabaseKey.create("A",1, 2)));
+        System.out.println("B(5,4,2)="+storage.get(DatabaseKey.create("B",5,4,2)));
+        System.out.println("B(5,4,3)="+storage.get(DatabaseKey.create("B",5,4,3)));
+        System.out.println(storage.getStatus(DatabaseKey.create("B")));
+        System.out.println(storage.next(DatabaseKey.create("B","")));
         */
 
         storage.close();
@@ -55,7 +55,7 @@ public class Main {
 
     private static void testRead(DatabaseStorage storage) {
         long start = System.currentTimeMillis();
-        DatabaseKey key = DatabaseKey.create("^GPB","");
+        DatabaseKey key = DatabaseKey.create("GPB","");
         while (true) {
             key = storage.next(key);
             if (key==null) break;
@@ -65,7 +65,7 @@ public class Main {
         System.out.println("Loop positivo em "+end+"ms\n");
 
         start = System.currentTimeMillis();
-        key = DatabaseKey.create("^GPB","");
+        key = DatabaseKey.create("GPB","");
         while (true) {
             key = storage.prev(key);
             if (key==null) break;
@@ -107,22 +107,22 @@ public class Main {
     }
 
     private static void testInsert(DatabaseStorage storage) {
-        DatabaseKey key1 = DatabaseKey.create("^tmp","N1");
-        DatabaseKey key2 = DatabaseKey.create("^tmp","N1","N11");
-        DatabaseKey key3 = DatabaseKey.create("^tmp",1);
-        DatabaseKey key4 = DatabaseKey.create("^tmp",2);
-        DatabaseKey key5 = DatabaseKey.create("^tmp","N2","N21");
+        DatabaseKey key1 = DatabaseKey.create("tmp","N1");
+        DatabaseKey key2 = DatabaseKey.create("tmp","N1","N11");
+        DatabaseKey key3 = DatabaseKey.create("tmp",1);
+        DatabaseKey key4 = DatabaseKey.create("tmp",2);
+        DatabaseKey key5 = DatabaseKey.create("tmp","N2","N21");
 
-        storage.set(DatabaseKey.create("^tmp",2, 1),"2.1");
-        storage.set(DatabaseKey.create("^tmp",3, 1),"3.1");
-        storage.set(DatabaseKey.create("^tmp",2.5),"2.5");
-        storage.set(DatabaseKey.create("^tmp","N12"),"N12");
-        storage.set(DatabaseKey.create("^tmp","a"),"a");
-        storage.set(DatabaseKey.create("^tmp","b"),"b");
-        storage.set(DatabaseKey.create("^tmp","c"),"c");
-        storage.set(DatabaseKey.create("^tmp","}"),"}");
-        storage.set(DatabaseKey.create("^tmp","}}"),"}}");
-        storage.set(DatabaseKey.create("^tmp","}}}"),"}}}");
+        storage.set(DatabaseKey.create("tmp",2, 1),"2.1");
+        storage.set(DatabaseKey.create("tmp",3, 1),"3.1");
+        storage.set(DatabaseKey.create("tmp",2.5),"2.5");
+        storage.set(DatabaseKey.create("tmp","N12"),"N12");
+        storage.set(DatabaseKey.create("tmp","a"),"a");
+        storage.set(DatabaseKey.create("tmp","b"),"b");
+        storage.set(DatabaseKey.create("tmp","c"),"c");
+        storage.set(DatabaseKey.create("tmp","}"),"}");
+        storage.set(DatabaseKey.create("tmp","}}"),"}}");
+        storage.set(DatabaseKey.create("tmp","}}}"),"}}}");
 
         storage.set(key1,"N1");
         storage.set(key2,"N1,N11");
@@ -137,7 +137,7 @@ public class Main {
         System.out.println("Teste 5: "+storage.get(key5));
 
         System.out.println("Order Next");
-        DatabaseKey item = DatabaseKey.create("^tmp","");
+        DatabaseKey item = DatabaseKey.create("tmp","");
         while (true) {
             item = storage.next(item);
             if (item==null) break;
@@ -145,7 +145,7 @@ public class Main {
         }
 
         System.out.println("Order Prev");
-        item = DatabaseKey.create("^tmp","");
+        item = DatabaseKey.create("tmp","");
         while (true) {
             item = storage.prev(item);
             if (item==null) break;

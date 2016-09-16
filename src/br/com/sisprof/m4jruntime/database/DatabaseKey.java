@@ -10,13 +10,10 @@ import java.util.List;
  */
 public class DatabaseKey {
 
-    private static final String GLOBAL_START = "^";
-
     private final String global;
     private final List<Object> subscripts = new ArrayList<>();
 
     private DatabaseKey(String global) {
-        if (!global.substring(0, 1).equals(GLOBAL_START)) throw new IllegalArgumentException("GLOBAL name "+global+" invalid");
         this.global = global.substring(1);
     }
 
@@ -34,9 +31,9 @@ public class DatabaseKey {
         return key;
     }
 
-    public String getGlobal() {
-        return GLOBAL_START+global;
-    }
+    //public String getGlobal() {
+        //return global;
+    //}
 
     public int size() {
         return subscripts.size();
@@ -66,9 +63,9 @@ public class DatabaseKey {
 
     public DatabaseKey nextSubscript() {
         if (subscripts.isEmpty()) {
-            return DatabaseKey.create(getGlobal(),"");
+            return DatabaseKey.create(global,"");
         } else {
-            DatabaseKey key = DatabaseKey.create(getGlobal(), subscripts.toArray());
+            DatabaseKey key = DatabaseKey.create(global, subscripts.toArray());
             key.subscripts.add("");
             return key;
         }
@@ -76,9 +73,9 @@ public class DatabaseKey {
 
     public DatabaseKey toSubscriptIndex(int i) {
         if (i==0) {
-            return DatabaseKey.create(getGlobal());
+            return DatabaseKey.create(global);
         } else if (i<subscripts.size()) {
-            return DatabaseKey.create(getGlobal(), Arrays.copyOf(subscripts.toArray(), i));
+            return DatabaseKey.create(global, Arrays.copyOf(subscripts.toArray(), i));
         }
         return this;
     }
@@ -86,7 +83,7 @@ public class DatabaseKey {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append(GLOBAL_START).append(global);
+        builder.append(global);
         if (!subscripts.isEmpty()) {
             builder.append("(");
             for (int i=0;i<subscripts.size();i++) {
