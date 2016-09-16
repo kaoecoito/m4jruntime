@@ -38,7 +38,7 @@ public class Main {
 
     private static void testRead(DatabaseStorage storage) {
         long start = System.currentTimeMillis();
-        DatabaseKey key = DatabaseKey.create("^GPB","SP","");
+        DatabaseKey key = DatabaseKey.create("^GPB","");
         while (true) {
             key = storage.next(key);
             if (key==null) break;
@@ -48,7 +48,7 @@ public class Main {
         System.out.println("Loop positivo em "+end+"ms\n");
 
         start = System.currentTimeMillis();
-        key = DatabaseKey.create("^GPB","SP","");
+        key = DatabaseKey.create("^GPB","");
         while (true) {
             key = storage.prev(key);
             if (key==null) break;
