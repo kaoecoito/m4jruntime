@@ -1,7 +1,5 @@
 package br.com.sisprof.m4jruntime.database;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 import java.io.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -339,11 +337,11 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
         return result;
     }
 
-    // TODO Possivel implementar TRESTART???
-
     @Override
     public void restartTransaction() {
-        throw new NotImplementedException();
+        if (transactionStack.isEmpty()) return; // TODO Implement Exception
+        rollback();
+        startTransaction();
     }
 
     @Override
