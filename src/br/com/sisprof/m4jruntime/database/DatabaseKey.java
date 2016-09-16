@@ -31,9 +31,9 @@ public class DatabaseKey {
         return key;
     }
 
-    //public String getGlobal() {
-        //return global;
-    //}
+    public String getGlobal() {
+        return global;
+    }
 
     public int size() {
         return subscripts.size();
