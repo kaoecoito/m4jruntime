@@ -80,6 +80,15 @@ public class DatabaseKey {
         return this;
     }
 
+    public long getHash64() {
+        long h = 0;
+        String s = toString();
+        for (int i=0;i<s.length();i++) {
+            h = 10891 * h + s.charAt(i);
+        }
+        return h;
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
