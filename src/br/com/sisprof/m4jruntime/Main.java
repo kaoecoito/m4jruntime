@@ -28,8 +28,17 @@ public class Main {
         PostgresqlDatabaseFactory databaseFactory = PostgresqlDatabaseFactory.newFactory(dataSource);
         DatabaseStorage storage = databaseFactory.create();
 
+        //testGOF(storage);
+        testRead(storage);
+        //testInsert(storage);
+
+        storage.close();
+
+    }
+
+    private static void testRead(DatabaseStorage storage) {
         long start = System.currentTimeMillis();
-        DatabaseKey key = DatabaseKey.create("^GPB","RR","");
+        DatabaseKey key = DatabaseKey.create("^GPB","SP","");
         while (true) {
             key = storage.next(key);
             if (key==null) break;
@@ -39,7 +48,7 @@ public class Main {
         System.out.println("Loop positivo em "+end+"ms\n");
 
         start = System.currentTimeMillis();
-        key = DatabaseKey.create("^GPB","RR","");
+        key = DatabaseKey.create("^GPB","SP","");
         while (true) {
             key = storage.prev(key);
             if (key==null) break;
@@ -47,12 +56,9 @@ public class Main {
         }
         end = System.currentTimeMillis()-start;
         System.out.println("Loop negativo em "+end+"ms\n");
-
-        storage.close();
-
     }
 
-    private void testGOF(DatabaseStorage storage) throws IOException {
+    private static void testGOF(DatabaseStorage storage) throws IOException {
         GOFImport gof = new GOFImport(new File("/home/kaoe/Downloads/GPB.GO"));
         gof.open();
 
@@ -68,7 +74,7 @@ public class Main {
         gof.close();
     }
 
-    private void testCompiler() throws IOException {
+    private static void testCompiler() throws IOException {
         MumpsCompiler compiler = new MumpsCompiler(new File("/home/kaoe/Downloads/TESTE.m"));
         compiler.compile();
         Routine routine = compiler.getRoutine();

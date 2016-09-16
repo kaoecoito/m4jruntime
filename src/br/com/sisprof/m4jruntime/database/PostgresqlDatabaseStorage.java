@@ -69,7 +69,7 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
         DataOutputStream output = new DataOutputStream(stream);
         try {
             List<Object> subscript = key.getSubscripts();
-            output.writeUTF(key.getGlobal());
+            output.write(key.getGlobal().getBytes("UTF-8"));
             for (Object item:subscript) {
                 output.writeByte(0x00);
                 if (item instanceof Number) {
@@ -85,7 +85,7 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
                     } else {
                         output.writeByte(0xFF);
                     }
-                    output.writeUTF(item.toString());
+                    output.write(item.toString().getBytes("UTF-8"));
                 }
             }
             output.flush();
@@ -101,7 +101,7 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
         DataOutputStream output = new DataOutputStream(stream);
         try {
             List<Object> subscript = key.getSubscripts();
-            output.writeUTF(key.getGlobal());
+            output.write(key.getGlobal().getBytes("UTF-8"));
             for (Object item:subscript) {
                 if (item instanceof Number) {
                     output.writeByte(0x00);
@@ -123,7 +123,7 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
                     } else {
                         output.writeByte(0xFF);
                     }
-                    output.writeUTF(item.toString());
+                    output.write(item.toString().getBytes("UTF-8"));
                 }
             }
             output.flush();
@@ -140,12 +140,19 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
             String globalName = null;
             List<Object> items = new ArrayList<>();
             try {
+                boolean nullExists;
                 ByteArrayInputStream stream = new ByteArrayInputStream(bs);
                 DataInputStream input = new DataInputStream(stream);
-                globalName = input.readUTF();
+                StringBuilder builder = new StringBuilder();
+                nullExists = readUTFString(input, builder);
+                globalName = builder.toString();
                 while (true) {
                     if (input.available()==0) break;
-                    input.readByte(); // TODO Force check to byte 0x00??
+                    if (!nullExists) {
+                        input.readByte();
+                    } else {
+                        nullExists = false;
+                    }
                     int type = input.readUnsignedByte();
                     if (type==0x01) {
                         Double value = input.readDouble();
@@ -157,7 +164,9 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
                     } else if (type==0xF0) {
                         items.add("");
                     } else if (type==0xFA || type==0xFF) {
-                        items.add(input.readUTF());
+                        nullExists = readUTFString(input, builder);
+                        items.add(builder.toString());
+                        builder.setLength(0);
                     }
                 }
                 input.close();
@@ -173,6 +182,21 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
 
         }
         return key;
+    }
+
+    private boolean readUTFString(DataInputStream input, StringBuilder builder) throws IOException {
+        boolean nullExists = false;
+        builder.setLength(0);
+        while (true) {
+            if (input.available()==0) break;
+            int bt = input.readUnsignedByte();
+            if (bt==0x00) {
+                nullExists = true;
+                break;
+            }
+            builder.append((char)bt);
+        }
+        return nullExists;
     }
 
     @Override
