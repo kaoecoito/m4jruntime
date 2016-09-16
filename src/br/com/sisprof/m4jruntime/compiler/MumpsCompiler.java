@@ -342,7 +342,9 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
             MUMPSParser.ExprContext right = item.expr(1);
 
             List<MUMPSParser.ExprContext> vars = new ArrayList<>();
-            if (left instanceof MUMPSParser.ExprFormatContext) {
+            if (left instanceof MUMPSParser.ExprVarContext) {
+                vars.add(left);
+            } else if (left instanceof MUMPSParser.ExprFormatContext) {
                 vars.add(left);
             } else if (left instanceof MUMPSParser.ExprListContext) {
                 MUMPSParser.ExprListContext list = (MUMPSParser.ExprListContext)left;
@@ -351,11 +353,23 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
 
             visitExpr(right);
             for (MUMPSParser.ExprContext var:vars) {
-                int varIndex = routine.add(new ConstantValueString(var.getText()));
-
                 routine.add(Duplicate.create(currentIndent, line));
-
-                routine.add(StoreVariable.create(currentIndent, line, varIndex));
+                if (var instanceof MUMPSParser.ExprVarContext) {
+                    MUMPSParser.VarContext varContext = ((MUMPSParser.ExprVarContext)var).var();
+                    if (varContext.flags.getText().equals("^")) {
+                        int args = 0;
+                        if (varContext.args() != null && !varContext.isEmpty()) {
+                            args = varContext.args().expr().size();
+                            visitArgs(varContext.args());
+                        }
+                        int varIndex = routine.add(new ConstantValueString("^"+varContext.ID().getText()));
+                        routine.add(Constant.create(currentIndent, line, varIndex));
+                        routine.add(StoreGlobal.create(currentIndent, line, args));
+                    }
+                } else {
+                    int varIndex = routine.add(new ConstantValueString(var.getText()));
+                    routine.add(StoreVariable.create(currentIndent, line, varIndex));
+                }
             }
             routine.add(PopStack.create(currentIndent, line));
 
@@ -493,15 +507,7 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
 
     @Override
     public Object visitExprVar(MUMPSParser.ExprVarContext ctx) {
-
-        int line = ctx.getStart().getLine();
-        String varName = ctx.getText();
-        if (varName.startsWith("$")) {
-            int funcIndex = routine.add(new ConstantValueString(varName));
-            routine.add(Constant.create(currentIndent, line, funcIndex));
-            routine.add(Command.create(currentIndent, line, 0));
-        }
-
+        visitVar(ctx.var());
         return null;
     }
 
@@ -698,6 +704,29 @@ public class MumpsCompiler implements MUMPSParserVisitor<Object> {
 
     @Override
     public Object visitVar(MUMPSParser.VarContext ctx) {
+
+        int line = ctx.getStart().getLine();
+        String flag = ctx.flags.getText();
+
+        if (flag.equals("$")) {
+            String functionName = "$"+ctx.ID().getText();
+            int funcIndex = routine.add(new ConstantValueString(functionName));
+            routine.add(Constant.create(currentIndent, line, funcIndex));
+            routine.add(Command.create(currentIndent, line, 0));
+        } else if (flag.equals("^")) {
+            String globalName = "^"+ctx.ID().getText();
+            int nameIdx = routine.add(new ConstantValueString(globalName));
+
+            int args = 0;
+            if (ctx.args()!=null && !ctx.args().expr().isEmpty()) {
+                args = ctx.args().expr().size();
+                visitArgs(ctx.args());
+            }
+
+            routine.add(Constant.create(currentIndent, line, nameIdx));
+            routine.add(LoadGlobal.create(currentIndent, line, args));
+        }
+
         return null;
     }
 

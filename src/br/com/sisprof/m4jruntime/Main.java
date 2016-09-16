@@ -26,10 +26,14 @@ public class Main {
         dataSource.setUser("postgres");
 
         PostgresqlDatabaseFactory databaseFactory = PostgresqlDatabaseFactory.newFactory(dataSource);
-        DatabaseStorage storage = databaseFactory.create();
+
+
+        testCompiler(databaseFactory);
+
+        //DatabaseStorage storage = databaseFactory.create();
 
         //testGOF(storage);
-        testRead(storage);
+        //testRead(storage);
         //storage.deleteAll(DatabaseKey.create("GPB"));
         //testInsert(storage);
 
@@ -58,7 +62,7 @@ public class Main {
         System.out.println(storage.next(DatabaseKey.create("B","")));
         */
 
-        storage.close();
+        //storage.close();
 
     }
 
@@ -103,15 +107,16 @@ public class Main {
         gof.close();
     }
 
-    private static void testCompiler() throws IOException {
+    private static void testCompiler(PostgresqlDatabaseFactory databaseFactory) throws IOException {
         MumpsCompiler compiler = new MumpsCompiler(new File("/home/kaoe/Downloads/TESTE.m"));
         compiler.compile();
         Routine routine = compiler.getRoutine();
 
         routine.writeFile(new File("/home/kaoe/Downloads/TESTE.mclass"));
 
-        VirtualMachine machine = VirtualMachine.newVirtualMachine();
+        VirtualMachine machine = VirtualMachine.newVirtualMachine(databaseFactory);
         machine.run(routine);
+        machine.close();
 
     }
 

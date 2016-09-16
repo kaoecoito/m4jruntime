@@ -1,5 +1,8 @@
 package br.com.sisprof.m4jruntime.runtime;
 
+import br.com.sisprof.m4jruntime.database.DatabaseFactory;
+import br.com.sisprof.m4jruntime.database.DatabaseStorage;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Deque;
@@ -20,17 +23,21 @@ public class VirtualMachine {
     private final Map<String,Method> commandsAndFunctions = new HashMap<>();
 
     private final long job;
+    private final DatabaseFactory databaseFactory;
     private final Deque<Frame> frames = new LinkedList<>();
     public final VariableScope globalScope = new VariableScope(null);
+
+    private DatabaseStorage storage;
     private Frame frame;
 
-    private VirtualMachine(long job) {
+    private VirtualMachine(long job, DatabaseFactory databaseFactory) {
         this.job = job;
+        this.databaseFactory = databaseFactory;
         this.init();
     }
 
-    public static VirtualMachine newVirtualMachine() {
-        return new VirtualMachine(JOB_GENERATOR.incrementAndGet());
+    public static VirtualMachine newVirtualMachine(DatabaseFactory databaseFactory) {
+        return new VirtualMachine(JOB_GENERATOR.incrementAndGet(), databaseFactory);
     }
 
     public static VirtualMachine getCurrent() {
@@ -45,9 +52,21 @@ public class VirtualMachine {
         return frame;
     }
 
+    public DatabaseStorage getStorage() {
+        return storage;
+    }
+
     private void init() {
+        this.storage = databaseFactory.create();
+
         loadCommands(DefaultCommands.class);
         loadFunctions(DefaultFunctions.class);
+    }
+
+    public void close() {
+        if (storage!=null) {
+            storage.close();
+        }
     }
 
     public void loadFunctions(Class clazz) {
