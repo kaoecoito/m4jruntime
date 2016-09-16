@@ -57,21 +57,31 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
     private PreparedStatement selectItem;
     private PreparedStatement selectNext;
     private PreparedStatement selectPrev;
+
     private PreparedStatement insertItem;
     private PreparedStatement mergeItem;
 
     private PreparedStatement deleteItem;
     private PreparedStatement deleteAll;
 
+    private PreparedStatement lock;
+    private PreparedStatement unlock;
+
     private void init() {
         try {
             selectItem = connection.prepareStatement("select value from global_dataset where key=?");
             selectNext = connection.prepareStatement("select key from global_dataset where key>? order by key limit 1");
             selectPrev = connection.prepareStatement("select key from global_dataset where key<? order by key desc limit 1");
+
             insertItem = connection.prepareStatement("insert into global_dataset (key,value) values (?,?) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value");
             mergeItem = connection.prepareStatement("insert into global_dataset select ? || substring(q.key from ?), q.value from global_dataset as q where q.key>=? and q.key<? ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value");
+
             deleteItem = connection.prepareStatement("delete from global_dataset where key=?");
             deleteAll = connection.prepareStatement("delete from global_dataset where key>? and key<?");
+
+            lock = connection.prepareStatement("select pg_try_advisory_lock(?) as result");
+            unlock = connection.prepareStatement("select pg_advisory_unlock(?) as result");
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -396,6 +406,44 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
                 e.printStackTrace();
                 break;
             }
+        }
+    }
+
+    @Override
+    public boolean lock(long lockId) {
+        boolean result = false;
+        try {
+            lock.setLong(1, lockId);
+            ResultSet rs = lock.executeQuery();
+            result = (rs.next() && rs.getBoolean("result"));
+            rs.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    @Override
+    public void unlock(long lockId) {
+        try {
+            unlock.setLong(1, lockId);
+            boolean result;
+            do {
+                ResultSet rs = unlock.executeQuery();
+                result = (rs.next() && rs.getBoolean("result"));
+                rs.close();
+            } while (result);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void unlockAll() {
+        try {
+            connection.prepareCall("SELECT pg_advisory_unlock_all()").execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 

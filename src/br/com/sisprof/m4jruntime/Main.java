@@ -33,6 +33,8 @@ public class Main {
         //storage.deleteAll(DatabaseKey.create("^GPB"));
         //testInsert(storage);
 
+
+        /*
         storage.deleteAll(DatabaseKey.create("^B"));
         storage.set(DatabaseKey.create("^A",1),"1");
         storage.set(DatabaseKey.create("^A",1, 2),"2");
@@ -45,6 +47,7 @@ public class Main {
         System.out.println("^B(5,4,3)="+storage.get(DatabaseKey.create("^B",5,4,3)));
         System.out.println(storage.getStatus(DatabaseKey.create("^B")));
         System.out.println(storage.next(DatabaseKey.create("^B","")));
+        */
 
         storage.close();
 

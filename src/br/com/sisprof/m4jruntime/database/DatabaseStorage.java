@@ -22,6 +22,9 @@ public interface DatabaseStorage {
     void rollback();
     int getTransactionLevel();
 
+    boolean lock(long lockId);
+    void unlock(long lockId);
+    void unlockAll();
 
     void close();
 
