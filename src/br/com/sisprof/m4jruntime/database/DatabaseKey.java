@@ -39,6 +39,11 @@ public class DatabaseKey {
         return subscripts.size();
     }
 
+    public boolean isNullSubscript() {
+        if (subscripts.isEmpty()) return true;
+        return subscripts.get(subscripts.size()-1).toString().isEmpty();
+    }
+
     public boolean equalLevels(DatabaseKey key) {
         boolean ret = true;
         if (!this.global.equals(key.global)) return false;

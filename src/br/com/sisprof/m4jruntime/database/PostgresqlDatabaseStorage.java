@@ -1,27 +1,35 @@
 package br.com.sisprof.m4jruntime.database;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
+import java.io.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by kaoe on 14/09/16.
  */
 public class PostgresqlDatabaseStorage implements DatabaseStorage {
 
-    private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
+    private static final int[] ESPECIAL_CHARS = {
+            'ç','Ç',
+            'á','Á','â','Â','ã','Ã','à','À','ä','Ä',
+            'é','É','ê','Ê','ẽ','Ẽ','è','È','ë','Ë',
+            'í','Í','ì','Ì','ï','Ï',
+            'ó','Ó','ô','Ô','õ','Õ','ò','Ò','ö','Ö',
+            'ú','Ú','ù','Ù','ü','Ü'
+    };
+    private static final Set<Integer> ESPECIAL_TABLE = new HashSet<>();
+    static {
+        for (int item: ESPECIAL_CHARS) {
+            ESPECIAL_TABLE.add(item);
+        }
+    }
 
-    private static final byte[] SEP = {(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
-    
     private final Connection connection;
 
     public PostgresqlDatabaseStorage(Connection connection) {
@@ -56,43 +64,69 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
         }
     }
 
-    private boolean isSep(byte[] bs, int start) {
-        boolean ret = true;
-        if (start>=bs.length || start+SEP.length>=bs.length) return false;
-        for (int i=0;i<SEP.length;i++) {
-            if (bs[start+i]!=SEP[i]) {
-                ret = false;
-                break;
-            }
-        }
-        return ret;
-    }
-
-
-    private byte[] toBytea(DatabaseKey key) {
-        return toBytea(key, false);
-    }
-
-    public byte[] toBytea(DatabaseKey key, boolean desc) {
+    public byte[] toBytea(DatabaseKey key) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        DataOutputStream output = new DataOutputStream(stream);
         try {
             List<Object> subscript = key.getSubscripts();
-            stream.write(key.getGlobal().getBytes(DEFAULT_CHARSET));
-            if (!subscript.isEmpty()) {
-                for (Object item:subscript) {
-                    stream.write(SEP);
-                    if (item instanceof String && item.toString().isEmpty()) {
-                        stream.write(desc?0xFF:0x00);
-                    } else if (item instanceof Number) {
-                        stream.write(0x01);
-                        byte[] bs = ByteBuffer.allocate(8).putDouble(((Number)item).doubleValue()).array();
-                        stream.write(bs);
+            output.writeUTF(key.getGlobal());
+            for (Object item:subscript) {
+                output.writeByte(0x00);
+                if (item instanceof Number) {
+                    output.writeByte(0x01);
+                    output.writeDouble(((Number)item).doubleValue());
+                } else if (item.toString().isEmpty()) {
+                    output.writeByte(0xF0);
+                } else {
+                    String str = item.toString();
+                    int chr = str.substring(0, 1).toCharArray()[0];
+                    if (('a'<=chr && chr<='z') || ('A'<=chr && chr<='Z') || ESPECIAL_TABLE.contains(chr)) {
+                        output.writeByte(0xFA);
                     } else {
-                        stream.write(0x02);
-                        stream.write(item.toString().getBytes(DEFAULT_CHARSET));
+                        output.writeByte(0xFF);
                     }
+                    output.writeUTF(item.toString());
                 }
             }
+            output.flush();
+            stream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return stream.toByteArray();
+    }
+
+    public byte[] toByteaSearch(DatabaseKey key, SearchDirection direction) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        DataOutputStream output = new DataOutputStream(stream);
+        try {
+            List<Object> subscript = key.getSubscripts();
+            output.writeUTF(key.getGlobal());
+            for (Object item:subscript) {
+                if (item instanceof Number) {
+                    output.writeByte(0x00);
+                    output.writeByte(0x01);
+                    output.writeDouble(((Number)item).doubleValue());
+                } else if (item.toString().isEmpty()) {
+                    if (SearchDirection.FORWARD.equals(direction)) {
+                        output.writeByte(0x00);
+                    } else {
+                        output.writeByte(0xFF);
+                        output.writeByte(0xFF);
+                    }
+                } else {
+                    output.writeByte(0x00);
+                    String str = item.toString();
+                    int chr = str.substring(0, 1).toCharArray()[0];
+                    if (('a'<=chr && chr<='z') || ('A'<=chr && chr<='Z') || ESPECIAL_TABLE.contains(chr)) {
+                        output.writeByte(0xFA);
+                    } else {
+                        output.writeByte(0xFF);
+                    }
+                    output.writeUTF(item.toString());
+                }
+            }
+            output.flush();
             stream.flush();
         } catch (IOException e) {
             e.printStackTrace();
@@ -103,51 +137,40 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
     private DatabaseKey toKey(byte[] bs) {
         DatabaseKey key = null;
         if (bs!=null && bs.length>0) {
-            List<byte[]> blocks = new ArrayList<>();
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            for (int i=0;i<bs.length;i++) {
-                if (isSep(bs, i)) {
-                    blocks.add(out.toByteArray());
-                    out.reset();
-                    i += (SEP.length-1);
-                } else {
-                    out.write(bs[i]);
-                }
-            }
-            if (out.size()>0) {
-                blocks.add(out.toByteArray());
-                out.reset();
-            }
-            if (!blocks.isEmpty()) {
-                String global = new String(blocks.get(0));
-                List<Object> subscripts = new ArrayList<>();
-                for (int i=1;i<blocks.size();i++) {
-                    byte[] block = blocks.get(i);
-                    byte[] content = null;
-                    if (block.length>1) {
-                        content = Arrays.copyOfRange(block, 1, block.length);
-                    }
-                    int type = block[0];
-                    if (type==0x00) {
-                        subscripts.add("");
-                    } else if (type==0x01) {
-                        ByteBuffer buffer = ByteBuffer.wrap(content);
-                        Double num = buffer.getDouble();
-                        if (num-num.longValue()>0) {
-                            subscripts.add(num);
+            String globalName = null;
+            List<Object> items = new ArrayList<>();
+            try {
+                ByteArrayInputStream stream = new ByteArrayInputStream(bs);
+                DataInputStream input = new DataInputStream(stream);
+                globalName = input.readUTF();
+                while (true) {
+                    if (input.available()==0) break;
+                    input.readByte(); // TODO Force check to byte 0x00??
+                    int type = input.readUnsignedByte();
+                    if (type==0x01) {
+                        Double value = input.readDouble();
+                        if (value-value.longValue()==0d) {
+                            items.add(value.longValue());
                         } else {
-                            subscripts.add(num.longValue());
+                            items.add(value);
                         }
-                    } else if (type==0x02) {
-                        subscripts.add(new String(content, DEFAULT_CHARSET));
+                    } else if (type==0xF0) {
+                        items.add("");
+                    } else if (type==0xFA || type==0xFF) {
+                        items.add(input.readUTF());
                     }
                 }
-                if (subscripts.isEmpty()) {
-                    key = DatabaseKey.create(global);
-                } else {
-                    key = DatabaseKey.create(global, subscripts.toArray());
-                }
+                input.close();
+                stream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+            if (items.isEmpty()) {
+                key = DatabaseKey.create(globalName);
+            } else {
+                key = DatabaseKey.create(globalName, items.toArray());
+            }
+
         }
         return key;
     }
@@ -184,23 +207,14 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
     public DatabaseKey next(DatabaseKey key) {
         DatabaseKey next = null;
         try {
-
-            byte[] bs = toBytea(key);
-            byte[] buffer = new byte[bs.length+SEP.length+1];
-            System.arraycopy(bs, 0, buffer, 0, bs.length);
-            for (int i=0;i<SEP.length;i++) {
-                buffer[bs.length+i] = (byte) 0xFF;
+            if (key.isNullSubscript()) {
+                selectNext.setBytes(1, toByteaSearch(key, SearchDirection.FORWARD));
+            } else {
+                selectNext.setBytes(1, toByteaSearch(key.nextSubscript(), SearchDirection.BACKWARD));
             }
-            buffer[buffer.length-1] = (byte) 0xFF;
-            selectNext.setBytes(1, buffer);
             ResultSet result = selectNext.executeQuery();
             if (result.next()) {
-                DatabaseKey nextKey = toKey(result.getBytes(1));
-                if (nextKey.size()==key.size() && nextKey.equalLevels(key)) {
-                    next = nextKey.toSubscriptIndex(key.size());
-                } else if (nextKey.size()>key.size()) {
-                    next = nextKey.toSubscriptIndex(key.size());
-                }
+                next = toKey(result.getBytes(1)).toSubscriptIndex(key.size());
             }
             result.close();
         } catch (SQLException e) {
@@ -213,18 +227,14 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
     public DatabaseKey prev(DatabaseKey key) {
         DatabaseKey prev = null;
         try {
-            byte[] bs = toBytea(key, true);
-            byte[] buffer = new byte[bs.length];
-            System.arraycopy(bs, 0, buffer, 0, bs.length);
-            selectPrev.setBytes(1, buffer);
+            if (key.isNullSubscript()) {
+                selectPrev.setBytes(1, toByteaSearch(key, SearchDirection.BACKWARD));
+            } else {
+                selectPrev.setBytes(1, toByteaSearch(key, SearchDirection.FORWARD));
+            }
             ResultSet result = selectPrev.executeQuery();
             if (result.next()) {
-                DatabaseKey prevKey = toKey(result.getBytes(1));
-                if (prevKey.size()==key.size() && prevKey.equalLevels(key)) {
-                    prev = prevKey.toSubscriptIndex(key.size());
-                } else if (prevKey.size()>key.size()) {
-                    prev = prevKey.toSubscriptIndex(key.size());
-                }
+                prev = toKey(result.getBytes(1)).toSubscriptIndex(key.size());
             }
             result.close();
         } catch (SQLException e) {
@@ -248,5 +258,10 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
             ret = 1;
         }
         return ret;
+    }
+
+    private enum SearchDirection {
+        FORWARD,
+        BACKWARD
     }
 }

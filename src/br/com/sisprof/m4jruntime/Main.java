@@ -29,21 +29,21 @@ public class Main {
         DatabaseKey key4 = DatabaseKey.create("^tmp",2);
         DatabaseKey key5 = DatabaseKey.create("^tmp","N2","N21");
 
-        storage.set(DatabaseKey.create("^tmp",2, 1),"");
-        storage.set(DatabaseKey.create("^tmp",3, 1),"");
-        storage.set(DatabaseKey.create("^tmp",2.5),"");
+        storage.set(DatabaseKey.create("^tmp",2, 1),"2.1");
+        storage.set(DatabaseKey.create("^tmp",3, 1),"3.1");
+        storage.set(DatabaseKey.create("^tmp",2.5),"2.5");
         storage.set(DatabaseKey.create("^tmp","N12"),"N12");
-        storage.set(DatabaseKey.create("^tmp","a"),"");
-        storage.set(DatabaseKey.create("^tmp","b"),"");
-        storage.set(DatabaseKey.create("^tmp","c"),"");
+        storage.set(DatabaseKey.create("^tmp","a"),"a");
+        storage.set(DatabaseKey.create("^tmp","b"),"b");
+        storage.set(DatabaseKey.create("^tmp","c"),"c");
         storage.set(DatabaseKey.create("^tmp","}"),"}");
         storage.set(DatabaseKey.create("^tmp","}}"),"}}");
         storage.set(DatabaseKey.create("^tmp","}}}"),"}}}");
 
         storage.set(key1,"N1");
         storage.set(key2,"N1,N11");
-        storage.set(key3,"Teste 3");
-        storage.set(key4,"Teste 4");
+        storage.set(key3,"1");
+        storage.set(key4,"2");
         storage.set(key5,"N2,N21");
 
         System.out.println("Teste 1: "+storage.get(key1));
@@ -68,12 +68,11 @@ public class Main {
             System.out.println("Order Prev Key: "+item.toString());
         }
 
-        System.out.println("Data 1: "+storage.getStatus(key1));
-        System.out.println("Data 2: "+storage.getStatus(key2));
-        System.out.println("Data 3: "+storage.getStatus(key3));
-        System.out.println("Data 4: "+storage.getStatus(key4));
-        System.out.println("Data 5: "+storage.getStatus(key5));
-
+        System.out.println("Data 1: "+storage.getStatus(key1)+" => "+key1.toString());
+        System.out.println("Data 2: "+storage.getStatus(key2)+" => "+key2.toString());
+        System.out.println("Data 3: "+storage.getStatus(key3)+" => "+key3.toString());
+        System.out.println("Data 4: "+storage.getStatus(key4)+" => "+key4.toString());
+        System.out.println("Data 5: "+storage.getStatus(key5)+" => "+key5.toString());
 
         storage.close();
 
