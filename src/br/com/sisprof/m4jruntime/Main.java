@@ -33,28 +33,18 @@ public class Main {
         //storage.deleteAll(DatabaseKey.create("^GPB"));
         //testInsert(storage);
 
-        /*
-        storage.startTransaction();
-        storage.set(DatabaseKey.create("^OLA",1),"1");
-        storage.startTransaction();
-        storage.set(DatabaseKey.create("^OLA",2),"2");
-        storage.commit();
-        storage.commit();
-        */
+        storage.deleteAll(DatabaseKey.create("^B"));
+        storage.set(DatabaseKey.create("^A",1),"1");
+        storage.set(DatabaseKey.create("^A",1, 2),"2");
+        storage.set(DatabaseKey.create("^A",1, 3),"3");
+        System.out.println("Merge: "+storage.merge(DatabaseKey.create("^A", 1), DatabaseKey.create("^B",5,4)));
 
-        DatabaseKey item = DatabaseKey.create("^OLA","");
-        while (true) {
-            item = storage.next(item);
-            if (item==null) break;
-            System.out.println(item+"="+storage.get(item));
-        }
-
-        /*
-        long start = System.currentTimeMillis();
-        storage.deleteAll(DatabaseKey.create("^GPB","PI"));
-        long end = System.currentTimeMillis()-start;
-        System.out.println("Delete em "+end+"ms\n");
-        */
+        System.out.println("^A(1)="+storage.get(DatabaseKey.create("^A",1)));
+        System.out.println("^A(1,2)="+storage.get(DatabaseKey.create("^A",1, 2)));
+        System.out.println("^B(5,4,2)="+storage.get(DatabaseKey.create("^B",5,4,2)));
+        System.out.println("^B(5,4,3)="+storage.get(DatabaseKey.create("^B",5,4,3)));
+        System.out.println(storage.getStatus(DatabaseKey.create("^B")));
+        System.out.println(storage.next(DatabaseKey.create("^B","")));
 
         storage.close();
 
@@ -81,7 +71,6 @@ public class Main {
         end = System.currentTimeMillis()-start;
         System.out.println("Loop negativo em "+end+"ms\n");
 
-        System.out.println("$D()="+storage.getStatus(DatabaseKey.create("^GPB","SP")));
     }
 
     private static void testGOF(DatabaseStorage storage) throws IOException {

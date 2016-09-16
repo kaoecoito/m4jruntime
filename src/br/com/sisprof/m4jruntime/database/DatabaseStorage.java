@@ -13,8 +13,10 @@ public interface DatabaseStorage {
     int getStatus(DatabaseKey key);
     boolean delete(DatabaseKey key);
     int deleteAll(DatabaseKey key);
+    int merge(DatabaseKey from, DatabaseKey to);
 
     void startTransaction();
+    void restartTransaction();
     void commit();
     void rollback(int levels);
     void rollback();

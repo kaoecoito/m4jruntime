@@ -1,5 +1,7 @@
 package br.com.sisprof.m4jruntime.database;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 import java.io.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -56,6 +58,7 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
     private PreparedStatement selectNext;
     private PreparedStatement selectPrev;
     private PreparedStatement insertItem;
+    private PreparedStatement mergeItem;
 
     private PreparedStatement deleteItem;
     private PreparedStatement deleteAll;
@@ -65,7 +68,8 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
             selectItem = connection.prepareStatement("select value from global_dataset where key=?");
             selectNext = connection.prepareStatement("select key from global_dataset where key>? order by key limit 1");
             selectPrev = connection.prepareStatement("select key from global_dataset where key<? order by key desc limit 1");
-            insertItem = connection.prepareStatement("insert into global_dataset (key,value) values (?,?) ON CONFLICT (key) DO UPDATE SET value=?");
+            insertItem = connection.prepareStatement("insert into global_dataset (key,value) values (?,?) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value");
+            mergeItem = connection.prepareStatement("insert into global_dataset select ? || substring(q.key from ?), q.value from global_dataset as q where q.key>=? and q.key<? ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value");
             deleteItem = connection.prepareStatement("delete from global_dataset where key=?");
             deleteAll = connection.prepareStatement("delete from global_dataset where key>? and key<?");
         } catch (SQLException e) {
@@ -213,11 +217,25 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
         try {
             insertItem.setBytes(1, toBytea(key));
             insertItem.setString(2, value);
-            insertItem.setString(3, value);
             insertItem.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public int merge(DatabaseKey from, DatabaseKey to) {
+        int total = 0;
+        try {
+            mergeItem.setBytes(1, toBytea(to));
+            mergeItem.setInt(2, toBytea(from).length+1);
+            mergeItem.setBytes(3, toByteaSearch(from.nextSubscript(), SearchDirection.FORWARD));
+            mergeItem.setBytes(4, toByteaSearch(from.nextSubscript(), SearchDirection.BACKWARD));
+            total = mergeItem.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return total;
     }
 
     @Override
@@ -309,6 +327,13 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
             e.printStackTrace();
         }
         return result;
+    }
+
+    // TODO Possivel implementar TRESTART???
+
+    @Override
+    public void restartTransaction() {
+        throw new NotImplementedException();
     }
 
     @Override
