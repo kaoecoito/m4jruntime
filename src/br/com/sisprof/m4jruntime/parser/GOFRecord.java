@@ -64,9 +64,9 @@ public class GOFRecord {
             createValue(builder, subscript);
         }
         if (subscript.isEmpty()) {
-            this.database = DatabaseKey.create(globalName);
+            this.database = DatabaseKey.create(globalName.substring(1));
         } else {
-            this.database = DatabaseKey.create(globalName, subscript.toArray());
+            this.database = DatabaseKey.create(globalName.substring(1), subscript.toArray());
         }
         this.content = (content!=null?content:"");
     }
