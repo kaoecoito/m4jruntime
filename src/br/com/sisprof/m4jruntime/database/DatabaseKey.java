@@ -56,6 +56,20 @@ public class DatabaseKey {
         }
         return ret;
     }
+
+    public boolean isParent(DatabaseKey key) {
+        boolean ret = true;
+        if (!this.global.equals(key.global)) return false;
+        int len = Math.min((this.size()>1?this.size()-1:1), key.size());
+        for (int i=0;i<len;i++) {
+            if (!this.subscripts.get(i).equals(key.subscripts.get(i))) {
+                ret = false;
+                break;
+            }
+        }
+        return ret;
+    }
+
     public List<Object> getSubscripts() {
         return Collections.unmodifiableList(subscripts);
     }

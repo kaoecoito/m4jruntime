@@ -29,14 +29,24 @@ public class Main {
         DatabaseStorage storage = databaseFactory.create();
 
         long start = System.currentTimeMillis();
-        DatabaseKey key = DatabaseKey.create("^GPB","");
+        DatabaseKey key = DatabaseKey.create("^GPB","RR","");
         while (true) {
             key = storage.next(key);
             if (key==null) break;
             System.out.println(key);
         }
         long end = System.currentTimeMillis()-start;
-        System.out.println("Loop dados em "+end+"ms");
+        System.out.println("Loop positivo em "+end+"ms\n");
+
+        start = System.currentTimeMillis();
+        key = DatabaseKey.create("^GPB","RR","");
+        while (true) {
+            key = storage.prev(key);
+            if (key==null) break;
+            System.out.println(key);
+        }
+        end = System.currentTimeMillis()-start;
+        System.out.println("Loop negativo em "+end+"ms\n");
 
         storage.close();
 

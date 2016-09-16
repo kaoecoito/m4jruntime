@@ -214,7 +214,10 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
             }
             ResultSet result = selectNext.executeQuery();
             if (result.next()) {
-                next = toKey(result.getBytes(1)).toSubscriptIndex(key.size());
+                DatabaseKey tmpNext = toKey(result.getBytes(1));
+                if (key.isParent(tmpNext)) {
+                    next = tmpNext.toSubscriptIndex(key.size());
+                }
             }
             result.close();
         } catch (SQLException e) {
@@ -234,7 +237,10 @@ public class PostgresqlDatabaseStorage implements DatabaseStorage {
             }
             ResultSet result = selectPrev.executeQuery();
             if (result.next()) {
-                prev = toKey(result.getBytes(1)).toSubscriptIndex(key.size());
+                DatabaseKey tmpPrev = toKey(result.getBytes(1));
+                if (key.isParent(tmpPrev)) {
+                    prev = tmpPrev.toSubscriptIndex(key.size());
+                }
             }
             result.close();
         } catch (SQLException e) {
